@@ -1,0 +1,57 @@
+﻿@page
+@model ExpensesChartModel
+@using Newtonsoft.Json
+@{
+    ViewData["Title"] = "Expenses Chart";
+}
+@using GnuCashReports.Models
+<h1 style="text-align:center">Expenses Chart</h1>
+<canvas id="chartYtd"></canvas> 
+
+
+@section Scripts {
+<script>
+    const dataPrevYear = @Html.Raw(JsonConvert.SerializeObject(Model.ProfitLossData.Where(x => x.AccountType == AppSettings.ACCOUNT_TYPE_EXPENSE && x.TotalAmountPrevYear >= 0).OrderBy(x => x.AccountName).Select(x => x.TotalAmountPrevYear)));
+    const labels = @Html.Raw(JsonConvert.SerializeObject(Model.Labels));
+    const dataYtd = @Html.Raw(JsonConvert.SerializeObject(Model.ProfitLossData.Where(x => x.AccountType == AppSettings.ACCOUNT_TYPE_EXPENSE && x.TotalAmountYTD >= 0).OrderBy(x => x.AccountName).Select(x => x.TotalAmountYTD)));
+
+
+    const haColor = getComputedStyle(document.documentElement).getPropertyValue('--ha-primary-color').trim();
+
+    const expenseChartYtd = new Chart('chartYtd', {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: '@(DateTime.Now.Year) YTD',
+            data: dataYtd,
+            backgroundColor: haColor
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'top'
+          }
+        },
+        scales: {
+            y: {
+              ticks: {
+                display: false // Hides y-axis labels
+                  },
+              grid: {color: document.documentElement.getAttribute('data-bs-theme') === 'dark' ? '#444444' : Chart.defaults.borderColor}
+            },
+            x: {
+              ticks: {
+                    font: {size: 14 }
+              },
+              grid: { color: document.documentElement.getAttribute('data-bs-theme') === 'dark' ? '#444444' : Chart.defaults.borderColor}
+            }
+          }
+      }
+    });
+</script>
+ }

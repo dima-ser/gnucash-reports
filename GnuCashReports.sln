@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35219.272
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GnuCashReports", "GnuCashReports\GnuCashReports.csproj", "{DA560D89-A2A0-4661-88EA-7A87631633A6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DA560D89-A2A0-4661-88EA-7A87631633A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA560D89-A2A0-4661-88EA-7A87631633A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA560D89-A2A0-4661-88EA-7A87631633A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA560D89-A2A0-4661-88EA-7A87631633A6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0AF97A4D-2AEE-494D-827E-F559EBB6CC22}
+	EndGlobalSection
+EndGlobal

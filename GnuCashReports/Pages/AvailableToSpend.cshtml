@@ -1,0 +1,16 @@
+﻿@page
+@model AvailableToSpendModel
+@using Newtonsoft.Json
+@{
+    ViewData["Title"] = "Available to Spend";
+}
+
+<h1 class="text-center">Available to Spend</h1>
+
+
+<div @(Model.availableToSpendThisYear <= 0 ? Html.Raw("class=\"text-center text-danger\"") : Html.Raw("class=\"text-center text-success\""))>
+  <h2 style="font-size: 20vw;">@Model.availableToSpendThisYear.ToString("C0")</h2>
+</div>
+<div style="text-align:center">
+    *to maintain <b>@Model.budgetSavingsRatePercentage%</b> savings rate
+</div>

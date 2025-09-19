@@ -1,0 +1,61 @@
+﻿@page
+@model BalanceSheetModel
+@{
+    ViewData["Title"] = "Balance Sheet";
+}
+@using GnuCashReports.Models
+
+<h2>Balance Sheet</h2>
+
+<table class="table">
+@*     <thead>
+        <tr>
+            <th scope="col"></th>
+            <th scope="col">@(DateTime.Now.Year - 1)</th>
+            <th scope="col">@DateTime.Now.Year YTD</th>
+        </tr>
+    </thead> *@
+    <tbody>
+        <tr>
+            <td colspan="3"><b>ASSETS</b></td>
+        </tr>
+        @foreach (var item in Model.BalanceSheetData.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_ASSET))
+        {
+            <tr>
+                <td>&nbsp;@item.AccountName</td>
+                <td>@((item.Balance).ToString("C0"))</td>
+            </tr>
+        }
+        <tr>
+            <td><b>TOTAL ASSETS</b></td>
+            <td><b>@((Model.BalanceSheetData.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_ASSET).Sum(i => i.Balance)).ToString("C0"))</b></td>
+        </tr>
+        <tr>
+            <td colspan="2"></td>
+        </tr>
+        <tr>
+            <td colspan="4"><b>LIABILITIES</b></td>
+        </tr>
+        @foreach (var item in Model.BalanceSheetData.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_LIABILITY).OrderBy(i => i.AccountName))
+        {
+            <tr>
+                <td>&nbsp;@item.AccountName</td>
+                <td>@item.Balance.ToString("C0")</td>
+            </tr>
+        }
+        <tr>
+            <td><b>TOTAL LIABILITIES</b></td>
+            <td><b>@Model.BalanceSheetData.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_LIABILITY).Sum(i => i.Balance).ToString("C0")</b></td>
+        </tr>
+        <tr>
+            <td colspan="2"></td>
+        </tr>
+        <tr style="font-size:large">
+            <td><b>NET WORTH</b></td>
+            <td><b>@((Model.BalanceSheetData.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_ASSET).Sum(i => i.Balance) +
+                                        Model.BalanceSheetData.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_LIABILITY).Sum(i => i.Balance)).ToString("C0"))
+                </b>
+            </td>
+        </tr>
+    </tbody>
+</table>

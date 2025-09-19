@@ -1,0 +1,24 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home";
+}
+
+
+<h1 class="display-4">GnuCash Reports</h1>
+<ul>
+    <li><a href="/profitloss">Profit & Loss</a></li>
+    <li><a href="/income">Income</a></li>
+    <li><a href="/expenses">Expenses</a></li>
+    <li><a href="/expenseschart">Expenses Chart</a></li>
+    <li><a href="/chart">Saved vs Spent Chart</a></li>
+    <li><a href="/availabletospend">Available To Spend</a></li>
+    <li><a href="/balancesheet">Balance Sheet</a></li>
+    <li><a href="/assetallocation">Asset Allocation</a></li>
+    <li><a href="/lastupdated">Last Updated</a></li>
+</ul>
+
+<div class="form-check form-switch ms-auto me-3 mt-2">
+    <input class="form-check-input" type="checkbox" id="themeToggle">
+    <label class="form-check-label" for="themeToggle">Dark Mode</label>
+</div>
