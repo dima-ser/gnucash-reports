@@ -1,0 +1,98 @@
+﻿@page
+@model NetWorthChartModel
+@using Newtonsoft.Json
+@{
+    ViewData["Title"] = "Net Worth Chart";
+}
+@using GnuCashReports.Models
+<h1 style="text-align:center">Net Worth Chart</h1>
+<canvas id="chartNetWorth"></canvas>
+<canvas id="chartIncrease"></canvas> 
+
+
+@section Scripts {
+<script>
+            const labelsNW = @Html.Raw(JsonConvert.SerializeObject(Model.NetWorthItems.Select(n => n.Date.Year).TakeLast(Model.NumYearsToDisplay)));
+        const dataNW = @Html.Raw(JsonConvert.SerializeObject(Model.NetWorthItems.Select(n => n.NetWorth).TakeLast(Model.NumYearsToDisplay)));
+
+    const labelsIncrease = @Html.Raw(JsonConvert.SerializeObject(Model.NetWorthIncreases.Select(n => n.Date.Year)));
+    const dataIncrease = @Html.Raw(JsonConvert.SerializeObject(Model.NetWorthIncreases.Select(n => n.NetWorthDelta)));
+
+            const haColor = getComputedStyle(document.documentElement).getPropertyValue('--ha-primary-color').trim();
+            const successColor = getComputedStyle(document.documentElement).getPropertyValue('--my-success-color').trim();
+
+            const chartNetWorth = new Chart('chartNetWorth', {
+        type: 'bar',
+        data: {
+                labels: labelsNW,
+        datasets: [
+            {
+            label: 'Net Worth',
+                    data: dataNW,
+            backgroundColor: haColor
+            }
+        ]
+        },
+        options: {
+        responsive: true,
+        plugins: {
+            legend: {
+            position: 'top'
+            }
+        },
+        scales: {
+            y: {
+                ticks: {
+                display: false // Hides y-axis labels
+                    },
+                grid: {color: document.documentElement.getAttribute('data-bs-theme') === 'dark' ? '#444444' : Chart.defaults.borderColor}
+            },
+            x: {
+                ticks: {
+                    font: {size: 14 }
+                },
+                grid: { color: document.documentElement.getAttribute('data-bs-theme') === 'dark' ? '#444444' : Chart.defaults.borderColor}
+            }
+            }
+        }
+    });
+
+
+
+      const chartIncrease = new Chart('chartIncrease', {
+      type: 'bar',
+      data: {
+            labels: labelsIncrease,
+        datasets: [
+          {
+            label: 'NW Increase YoY',
+                data: dataIncrease,
+            backgroundColor: successColor
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'top'
+          }
+        },
+        scales: {
+            y: {
+              ticks: {
+                display: false // Hides y-axis labels
+                  },
+              grid: {color: document.documentElement.getAttribute('data-bs-theme') === 'dark' ? '#444444' : Chart.defaults.borderColor}
+            },
+            x: {
+              ticks: {
+                    font: {size: 14 }
+              },
+              grid: { color: document.documentElement.getAttribute('data-bs-theme') === 'dark' ? '#444444' : Chart.defaults.borderColor}
+            }
+          }
+      }
+    });
+</script>
+ }

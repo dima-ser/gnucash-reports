@@ -47,6 +47,9 @@ This is used in the "Available to Spend" report to show amount available to spen
 ## ExpenseAccountEmojis [optional]
 These are used in your expense reports to make them easier to see at a glance and to shorten account names to better fit on the expense chart. Used in the expense report to prepend account names and in the expense chart instead of account names to save space. If omitted for a particular expense account, account name will be used instead. This section is optional.
 
+## NetWorthYearsToDisplay
+Number of years to display on net worth chart (including current year to date).
+
 ## InvestmentSettings [optional]
 These are required for "Asset Allocation" report. If you don't track investments in GnuCash, you can omit this whole section. However, if any of these are configured, the rest are required as well.
 

@@ -203,6 +203,99 @@ ORDER BY general_account_type, account_code;";
             }
         }
 
+        /// <summary>
+        /// Returns net worth as of specified date (inclusive)
+        /// </summary>
+        /// <param name="date">Date to return net worth for. Date is inclusive, meaning transactions and prices as of this date are included in teh net worth</param>
+        /// <returns></returns>
+        public async Task<decimal> GetNetWorthAsync(DateOnly date)
+        {
+            using (var connection = new SqliteConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+
+                var command = connection.CreateCommand();
+                command.Parameters.Add(new SqliteParameter("@assetGuid", _appSettings.AssetRootAccountGuid));
+                command.Parameters.Add(new SqliteParameter("@liabilityGuid", _appSettings.LiabilityRootAccountGuid));
+                DateOnly priceDate = date.AddDays(1); // to make the prices reflect end of day price
+                command.Parameters.Add(new SqliteParameter("@transDate", date));
+                command.Parameters.Add(new SqliteParameter("@priceDate", priceDate));
+                command.CommandText = @"WITH RECURSIVE account_tree AS (
+    -- Root accounts
+    SELECT 
+        a.guid,
+        a.name,
+        a.account_type,
+        a.parent_guid,
+        a.commodity_guid,
+        a.commodity_scu,
+        a.guid AS level2_guid,
+        a.name AS level2_name,
+		a.code AS level2_code
+    FROM accounts a
+    WHERE a.guid IN (@assetGuid, @liabilityGuid)
+
+    UNION ALL
+
+    -- Descendants of root accounts
+    SELECT 
+        a.guid,
+        a.name,
+        a.account_type,
+        a.parent_guid,
+        a.commodity_guid,
+        a.commodity_scu,
+        at.level2_guid,
+        at.level2_name,
+		at.level2_code
+    FROM accounts a
+    JOIN account_tree at ON a.parent_guid = at.guid
+),
+latest_prices AS (
+    SELECT p.commodity_guid, MAX(p.date) AS latest_date
+    FROM prices p
+	WHERE p.date < DATETIME(@priceDate)  
+    GROUP BY p.commodity_guid
+),
+price_lookup AS (
+    SELECT p.commodity_guid,
+           p.value_num * 1.0 / p.value_denom AS price
+    FROM prices p
+    JOIN latest_prices lp ON p.commodity_guid = lp.commodity_guid AND p.date = lp.latest_date
+),
+balances AS (
+    SELECT 
+        at.level2_name AS account_name,
+        at.account_type,
+		at.level2_code AS account_code,
+        SUM(
+            CASE 
+                WHEN at.account_type in ('MUTUAL', 'STOCK') and c.namespace != 'CURRENCY' THEN
+                    s.quantity_num * 1.0 / s.quantity_denom * IFNULL(pl.price, 0)
+                ELSE
+                    s.value_num * 1.0 / s.value_denom
+            END
+        ) AS balance
+    FROM splits s
+    JOIN transactions t ON s.tx_guid = t.guid
+    JOIN account_tree at ON s.account_guid = at.guid
+    LEFT JOIN commodities c ON at.commodity_guid = c.guid
+    LEFT JOIN price_lookup pl ON at.commodity_guid = pl.commodity_guid
+	where DATE(t.post_date) < DATETIME(@transDate)
+    GROUP BY at.level2_guid, at.level2_name, at.account_type
+    HAVING ABS(balance) > 0.0001
+)
+SELECT sum(balance) as networth
+FROM balances";
+
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    await reader.ReadAsync();
+                    return reader.GetDecimal(0);
+                }
+            }
+        }
+
         public async Task<List<BalanceSheetItem>> GetInvestmentsAsync(List<string> investmentRootAccountGuids, string netChangeInterval, string netChangeInterval2, TimeSpan cutoffTime)
         {
             var results = new List<BalanceSheetItem>();
