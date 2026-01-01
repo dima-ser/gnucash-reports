@@ -29,7 +29,10 @@ namespace GnuCashReports.Pages
             percentSavedPrevYear = 100 - percentSpentPrevYear;
             decimal spentYTD = ProfitLossData.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_EXPENSE).Sum(i => i.TotalAmountYTD);
             decimal totalYTD = -ProfitLossData.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_INCOME).Sum(i => i.TotalAmountYTD);
-            percentSpentYTD = Math.Round((spentYTD / totalYTD) * 100, 1);
+            if (totalYTD > 0 )
+                percentSpentYTD = Math.Round((spentYTD / totalYTD) * 100, 1);
+            else
+                percentSpentYTD = 100; // to avoid division by zero. Saving percentage will show 0% until we have positive income in a year
             percentSavedYTD = 100 - percentSpentYTD;
         }
     }
