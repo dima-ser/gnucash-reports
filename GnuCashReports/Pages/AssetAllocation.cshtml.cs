@@ -17,6 +17,7 @@ namespace GnuCashReports.Pages
         public AssetAllocation? ActualAssetAllocation { get; set; } 
         public List<AssetAllocation> InvestmentAssetAllocations { get; set; }
         public List<AssetAllocationItem> AssetAllocationData { get; set; } = new();
+        public List<string> ExcludedAccounts { get; set; } = new();
         public decimal TargetAmountUS, TargetAmountIntnl, TargetAmountBonds;
         public decimal ActualAmountUS, ActualAmountIntnl, ActualAmountBonds;
         public decimal TotalAmount, TotalPreviousAmount, NetChange, NetPercentageChange, TotalPreviousAmount2, NetChange2, NetPercentageChange2;
@@ -31,6 +32,7 @@ namespace GnuCashReports.Pages
             _appSettings = appSettings.Value;
             TargetAssetAllocation = _appSettings.InvestmentSettings.TargetAssetAllocation;
             InvestmentAssetAllocations = _appSettings.InvestmentSettings.InvestmentAssetAllocations;
+            ExcludedAccounts = _appSettings.InvestmentSettings.ExcludedAccounts;
             RebalanceRelativePercentage = _appSettings.InvestmentSettings.RebalanceRelativePercentage;
             NetChangeInterval = _appSettings.InvestmentSettings!.NetChangeInterval;
             NetChangeInterval2 = _appSettings.InvestmentSettings!.NetChangeInterval2;
@@ -60,33 +62,28 @@ namespace GnuCashReports.Pages
 
         public async Task OnGetAsync()
         {
-            List <BalanceSheetItem> balanceSheetData = await _dbService.GetInvestmentsAsync(_appSettings.InvestmentSettings!.InvestmentRootAccountGuids,
+            List<BalanceSheetItem> balanceSheetData = await _dbService.GetInvestmentsAsync(_appSettings.InvestmentSettings!.InvestmentRootAccountGuids,
                 NetChangeInterval, NetChangeInterval2, _appSettings.InvestmentSettings!.TimeOfDayCutoff);
 
             foreach (var balanceSheetItem in balanceSheetData)
             {
-                //try
-                //{
                 if (InvestmentAssetAllocations.Where(i => i.Name == balanceSheetItem.AccountName).Count() > 0)
                 {
                     var assetAllocationItem = new AssetAllocationItem(balanceSheetItem, InvestmentAssetAllocations.Where(i => i.Name == balanceSheetItem.AccountName).First());
                     AssetAllocationData.Add(assetAllocationItem);
                 }
                 // we only need asset allocations for accounts with current balance over 0 as we don't track previous asset allocations
-                else if (balanceSheetItem.Balance < AppSettings.SQLITE_FLOATING_POINT_MARGIN) 
+                // also exclude accounts specified in the ExcludedAccounts configuration
+                else if (balanceSheetItem.Balance < AppSettings.SQLITE_FLOATING_POINT_MARGIN || ExcludedAccounts.Contains(balanceSheetItem.AccountName))
                 {
-                    var assetAllocationItem = new AssetAllocationItem(balanceSheetItem, new AssetAllocation("Dummy",0,0,0));
+                    var assetAllocationItem = new AssetAllocationItem(balanceSheetItem, new AssetAllocation("Dummy", 0, 0, 0));
                     AssetAllocationData.Add(assetAllocationItem);
                 }
                 else
-                    throw new Exception("No valid asset allocation configuration found for \"" + balanceSheetItem.AccountName + "\"");
-                //}
-                //catch (InvalidOperationException)
-                //{
-                //    throw new Exception("No asset allocation configuration found for \"" + balanceSheetItem.AccountName + "\"");
-                //}
+                    throw new Exception("No asset allocation configuration found for \"" + balanceSheetItem.AccountName + "\". " +
+                        "Add an asset allocation for this account under \"InvestmentAssetAllocations\" or add it to \"ExcludedAccounts\" to ignore it.");
             }
-            
+
             TargetAmountUS = AssetAllocationData.Sum(i => i.BalanceSheetItem.Balance) * (TargetAssetAllocation.US / 100);
             TargetAmountIntnl = AssetAllocationData.Sum(i => i.BalanceSheetItem.Balance) * (TargetAssetAllocation.INTNL / 100);
             TargetAmountBonds = AssetAllocationData.Sum(i => i.BalanceSheetItem.Balance) * (TargetAssetAllocation.BND / 100);

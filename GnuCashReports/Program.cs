@@ -20,11 +20,14 @@ builder.Services.AddSingleton<DatabaseService>(serviceProvider =>
 
 var app = builder.Build();
 
+// we want to see full error details in production, since this app is not meant to be public facing
+app.UseDeveloperExceptionPage();
+
 // Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Error");
-}
+//if (!app.Environment.IsDevelopment())
+//{
+//    app.UseExceptionHandler("/Error");
+//}
 app.UseStaticFiles();
 
 app.UseRouting();
