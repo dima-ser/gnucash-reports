@@ -39,7 +39,7 @@ namespace GnuCashReports.Models
         public required List<string> InvestmentRootAccountGuids { get; set; }
         public required List<AssetAllocation> InvestmentAssetAllocations { get; set; }
         public required AssetAllocation TargetAssetAllocation { get; set; }
-        public required List<string> ExcludedAccounts { get; set; }
+        public required List<string>? ExcludedAccounts { get; set; }
         public decimal RebalanceRelativePercentage { get; set; }
         public required string NetChangeInterval { get; set; }
         public required string NetChangeInterval2 { get; set; }

@@ -17,7 +17,7 @@ namespace GnuCashReports.Pages
         public AssetAllocation? ActualAssetAllocation { get; set; } 
         public List<AssetAllocation> InvestmentAssetAllocations { get; set; }
         public List<AssetAllocationItem> AssetAllocationData { get; set; } = new();
-        public List<string> ExcludedAccounts { get; set; } = new();
+        public List<string>? ExcludedAccounts { get; set; }
         public decimal TargetAmountUS, TargetAmountIntnl, TargetAmountBonds;
         public decimal ActualAmountUS, ActualAmountIntnl, ActualAmountBonds;
         public decimal TotalAmount, TotalPreviousAmount, NetChange, NetPercentageChange, TotalPreviousAmount2, NetChange2, NetPercentageChange2;
@@ -74,7 +74,7 @@ namespace GnuCashReports.Pages
                 }
                 // we only need asset allocations for accounts with current balance over 0 as we don't track previous asset allocations
                 // also exclude accounts specified in the ExcludedAccounts configuration
-                else if (balanceSheetItem.Balance < AppSettings.SQLITE_FLOATING_POINT_MARGIN || ExcludedAccounts.Contains(balanceSheetItem.AccountName))
+                else if (balanceSheetItem.Balance < AppSettings.SQLITE_FLOATING_POINT_MARGIN || (ExcludedAccounts != null && ExcludedAccounts.Contains(balanceSheetItem.AccountName)))
                 {
                     var assetAllocationItem = new AssetAllocationItem(balanceSheetItem, new AssetAllocation("Dummy", 0, 0, 0));
                     AssetAllocationData.Add(assetAllocationItem);
