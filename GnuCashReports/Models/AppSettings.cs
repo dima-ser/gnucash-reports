@@ -26,6 +26,7 @@ namespace GnuCashReports.Models
         public required string LiabilityRootAccountGuid { get; set; }
         public string? ClosingEntriesPattern { get; set; }
         public decimal TargetSavingsPercentage { get; set; }
+        public List<string>? ExcludedIncomeAccountsFromSavingRate { get; set; }
         public Dictionary<string, string>? ExpenseAccountEmojis { get; set; }
 
         public int NetWorthYearsToDisplay { get; set; }
@@ -77,6 +78,8 @@ namespace GnuCashReports.Models
             }
             if (settings.TargetSavingsPercentage < 0 || settings.TargetSavingsPercentage > 100)
                 return ValidateOptionsResult.Fail("TargetSavingsPercentage must be between 0 and 100");
+
+
             if (settings.NetWorthYearsToDisplay < 1)
                 return ValidateOptionsResult.Fail("NetWorthYearsToDisplay must be positive");
             if (settings.InvestmentSettings != null)

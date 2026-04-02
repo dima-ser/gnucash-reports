@@ -27,11 +27,12 @@ namespace GnuCashReports.Pages
         {
             ProfitLossData = await _plService.GetLevel2ProfitLossAsync();
             budgetSavingsRatePercentage = _appSettings.TargetSavingsPercentage;
+            List<string> exludedIncomeAccounts = _appSettings.ExcludedIncomeAccountsFromSavingRate ?? new List<string>();
+
             decimal spendingRate = (100 - budgetSavingsRatePercentage) /100;
 
             decimal spentYTD = ProfitLossData.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_EXPENSE).Sum(i => i.TotalAmountYTD);
-            decimal incomeYTD = -ProfitLossData.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_INCOME).Sum(i => i.TotalAmountYTD);
-
+            decimal incomeYTD = -ProfitLossData.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_INCOME).Where(i => !exludedIncomeAccounts.Contains(i.AccountName)).Sum(i => i.TotalAmountYTD);
             availableToSpendThisYear = (incomeYTD * spendingRate) - spentYTD;
         }
     }
