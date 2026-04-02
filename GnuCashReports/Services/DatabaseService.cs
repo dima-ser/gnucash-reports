@@ -380,7 +380,7 @@ balances AS (
     JOIN account_tree at ON s.account_guid = at.guid
     LEFT JOIN commodities c ON at.commodity_guid = c.guid
     LEFT JOIN price_lookup pl ON at.commodity_guid = pl.commodity_guid
-    GROUP BY at.account_type, at.name
+    GROUP BY at.guid, at.account_type, at.name
     --HAVING ABS(balance) > 0.0001
 ),
 prev_balances AS (
@@ -399,7 +399,7 @@ prev_balances AS (
     JOIN account_tree at ON s.account_guid = at.guid
     LEFT JOIN commodities c ON at.commodity_guid = c.guid
 	LEFT JOIN prev_price_lookup ppl ON at.commodity_guid = ppl.commodity_guid
-    GROUP BY at.account_type, at.name
+    GROUP BY at.guid, at.account_type, at.name
     --HAVING ABS(prev_balance) > 0.0001 
 ),
 prev_balances2 AS (
@@ -418,7 +418,7 @@ prev_balances2 AS (
     JOIN account_tree at ON s.account_guid = at.guid
     LEFT JOIN commodities c ON at.commodity_guid = c.guid
 	LEFT JOIN prev_price_lookup2 ppl ON at.commodity_guid = ppl.commodity_guid
-    GROUP BY at.account_type, at.name
+    GROUP BY at.guid, at.account_type, at.name
     --HAVING ABS(prev_balance) > 0.0001 
 )
 SELECT b.account_type, b.account_name, b.balance, p.prev_balance, p2.prev_balance2
