@@ -1,0 +1,26 @@
+﻿@page
+@model FIReportModel
+@{
+    ViewData["Title"] = "FI Report";
+}
+@using GnuCashReports.Models
+
+<h1>FI Report</h1>
+
+<table class="table">
+@*     <thead>
+        <tr>
+            <th scope="col"></th>
+            <th scope="col">@(DateTime.Now.Year - 1)</th>
+            <th scope="col">@DateTime.Now.Year YTD</th>
+        </tr>
+    </thead> *@
+    <tbody>
+        <tr style="font-size:large">
+            <td><b>TOTAL LIQUID ASSETS</b></td>
+            <td><b>@((Model.BalanceSheetData.Sum(i => i.Balance)).ToString("C0"))
+                </b>
+            </td>
+        </tr>
+    </tbody>
+</table>

@@ -32,8 +32,8 @@ namespace GnuCashReports.Models
         public int NetWorthYearsToDisplay { get; set; }
         public InvestmentSettings? InvestmentSettings { get; set; }
 
-
-    }
+        public FISettings? FISettings { get; set; }
+        }
 
     public class InvestmentSettings
     {
@@ -47,7 +47,10 @@ namespace GnuCashReports.Models
         public required TimeSpan TimeOfDayCutoff { get; set; }
     }
 
-
+    public class  FISettings
+    {
+        public required List<string> AssetAccountGuids { get; set; }
+    }
     public class AppSettingsValidation : IValidateOptions<AppSettings>
     {
         public ValidateOptionsResult Validate(string? name, AppSettings settings)
@@ -112,6 +115,14 @@ namespace GnuCashReports.Models
                     return ValidateOptionsResult.Fail("Invalid configuration: NetChangeInterval. Must be one of the following: \"-[n] day(s)|month(s)|year(s)\" or \"start of day|month|year\"");
 
             }
+            if (settings.FISettings != null)
+            {
+                if (settings.FISettings.AssetAccountGuids == null || settings.FISettings.AssetAccountGuids.Count < 1)
+                {
+                    return ValidateOptionsResult.Fail("Missing configuration: FISettings.AssetAccountGuids (at least 1 is required)");
+                }
+            }
+
             return ValidateOptionsResult.Success;
         }
 
