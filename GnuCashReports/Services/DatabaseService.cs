@@ -104,8 +104,12 @@ FROM pl_level2_prev_year as prev left JOIN pl_level2_ytd as ytd on ytd.level2_gu
             }
         }
 
-        public async Task<List<BalanceSheetItem>> GetBalanceSheetAsync()
+        public async Task<List<BalanceSheetItem>> GetBalanceSheetAsync(List<string> parentAccountGuids)
         {
+            if (parentAccountGuids == null || parentAccountGuids.Count == 0)
+            {
+                throw new ArgumentException("At least one parent account guid must be provided");
+            }
             var results = new List<BalanceSheetItem>();
 
             using (var connection = new SqliteConnection(_connectionString))
@@ -113,8 +117,17 @@ FROM pl_level2_prev_year as prev left JOIN pl_level2_ytd as ytd on ytd.level2_gu
                 await connection.OpenAsync();
 
                 var command = connection.CreateCommand();
-                command.Parameters.Add(new SqliteParameter("@assetGuid", _appSettings.AssetRootAccountGuid));
-                command.Parameters.Add(new SqliteParameter("@liabilityGuid", _appSettings.LiabilityRootAccountGuid));
+                string sqlInList = "";
+                for (int i = 0; i < parentAccountGuids.Count; i++)
+                {
+                    command.Parameters.Add(new SqliteParameter("@guid" + i, parentAccountGuids[i]));
+                    if (i < parentAccountGuids.Count - 1)
+                        sqlInList += "@guid" + i + ",";
+                    else
+                        sqlInList += "@guid" + i;
+                }
+                //command.Parameters.Add(new SqliteParameter("@assetGuid", _appSettings.AssetRootAccountGuid));
+                //command.Parameters.Add(new SqliteParameter("@liabilityGuid", _appSettings.LiabilityRootAccountGuid));
                 command.CommandText = @"WITH RECURSIVE account_tree AS (
     -- Level 2 accounts (direct children of top-level)
     SELECT 
@@ -128,7 +141,7 @@ FROM pl_level2_prev_year as prev left JOIN pl_level2_ytd as ytd on ytd.level2_gu
         a.name AS level2_name,
 		a.code AS level2_code
     FROM accounts a
-    WHERE a.parent_guid IN (@assetGuid, @liabilityGuid)
+    WHERE a.parent_guid IN (" + sqlInList + @")
 
     UNION ALL
 
