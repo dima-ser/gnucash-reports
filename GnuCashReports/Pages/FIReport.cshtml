@@ -1,7 +1,7 @@
 ﻿@page
 @model FIReportModel
 @{
-    ViewData["Title"] = "FI Report";
+    ViewData["Title"] = "Financial Independence Report";
 }
 @using GnuCashReports.Models
 
@@ -17,10 +17,37 @@
     </thead> *@
     <tbody>
         <tr style="font-size:large">
-            <td><b>TOTAL LIQUID ASSETS</b></td>
-            <td><b>@((Model.BalanceSheetData.Sum(i => i.Balance)).ToString("C0"))
+            <td>Total Liquid Assets</td>
+            <td><b>@((Model.TotalLiquidAssets).ToString("C0"))
+                </b>
+            </td>
+        </tr>
+        <tr style="font-size:large">
+            <td>Average Annual Expenses</td>
+            <td>
+                <b>
+                    @(Model.AverageAnnualExpenses.ToString("C0"))
+                </b>
+            </td>
+        </tr>
+        <tr style="font-size:large">
+            <td>Total Needed for FI</td>
+            <td>
+                <b>
+                    @(Model.TotalNeededForFI.ToString("C0"))
+                </b>
+            </td>
+        </tr>
+        <tr style="font-size:large">
+            <td><b>PROGRESS TOWARDS FI</b></td>
+            <td>
+                <b>
+                    @((Model.TotalLiquidAssets / Model.TotalNeededForFI).ToString("P1"))
                 </b>
             </td>
         </tr>
     </tbody>
 </table>
+<div>
+    *Assuming a @(Model.SafeWithdrawalRate.ToString("P0")) withdrawal rate and @(Model.AvergeExpensesYearsLookback) years lookback period to determine average expenses
+</div>

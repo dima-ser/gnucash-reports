@@ -50,6 +50,9 @@ namespace GnuCashReports.Models
     public class  FISettings
     {
         public required List<string> AssetAccountGuids { get; set; }
+        public required decimal SafeWithdrawalRate { get; set; }
+
+        public required int AverageExpensesYearsLookback { get; set; }
     }
     public class AppSettingsValidation : IValidateOptions<AppSettings>
     {
@@ -121,6 +124,10 @@ namespace GnuCashReports.Models
                 {
                     return ValidateOptionsResult.Fail("Missing configuration: FISettings.AssetAccountGuids (at least 1 is required)");
                 }
+                if (settings.FISettings.SafeWithdrawalRate <= 0 || settings.FISettings.SafeWithdrawalRate >= 1)
+                    return ValidateOptionsResult.Fail("FISettings.SafeWithdrawalRate must be between 0 and 1");
+                if (settings.FISettings.AverageExpensesYearsLookback <= 0)
+                    return ValidateOptionsResult.Fail("FISettings.AverageExpensesYearsLookback must be positive");
             }
 
             return ValidateOptionsResult.Success;

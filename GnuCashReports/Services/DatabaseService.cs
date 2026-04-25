@@ -104,6 +104,67 @@ FROM pl_level2_prev_year as prev left JOIN pl_level2_ytd as ytd on ytd.level2_gu
             }
         }
 
+        public async Task<decimal> GetAverageAnnualExpenses()
+        {
+            if (_appSettings.FISettings == null)
+            {
+                throw new ArgumentException("Before calling this method, FISettings must be configured in appsettings.json");
+            }
+            using (var connection = new SqliteConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+
+                var command = connection.CreateCommand();
+                int numYears = _appSettings.FISettings.AverageExpensesYearsLookback;
+                command.Parameters.Add(new SqliteParameter("@numYears", numYears));
+                DateTime startDate = new DateTime(DateTime.Now.Year - numYears, 1, 1);
+                DateTime endDate = new DateTime(DateTime.Now.Year, 1, 1);
+                command.Parameters.Add(new SqliteParameter("@startDate", startDate));
+                command.Parameters.Add(new SqliteParameter("@endDate", endDate));
+                string closingEntriesSql = "";
+                if (_appSettings.ClosingEntriesPattern != null)
+                {
+                    command.Parameters.Add(new SqliteParameter("@ignorePattern", _appSettings.ClosingEntriesPattern));
+                    closingEntriesSql = " and description not like @ignorePattern ";
+                }
+                command.CommandText = @"
+            WITH RECURSIVE
+root_guid as (select guid from accounts where parent_guid is NULL and name='Root Account'),
+root_expense_guid as (select guid from accounts where account_type='EXPENSE' and parent_guid=(select guid from root_guid)),
+account_tree AS (
+    SELECT a.guid, a.name, a.parent_guid, a.account_type,
+           a.guid AS level2_guid, a.name AS level2_name
+    FROM accounts a
+    WHERE a.parent_guid=(select guid from root_expense_guid)
+
+    UNION ALL
+
+    SELECT a.guid, a.name, a.parent_guid, a.account_type,
+           at.level2_guid, at.level2_name
+    FROM accounts a
+    JOIN account_tree at ON a.parent_guid = at.guid
+),
+pl_level2_ytd AS (
+    SELECT at.level2_guid, at.level2_name AS account_name,
+           at.account_type,
+           SUM(s.value_num * 1.0 / s.value_denom) AS total_amount
+    FROM splits s
+    JOIN transactions t ON s.tx_guid = t.guid
+    JOIN account_tree at ON s.account_guid = at.guid
+    WHERE t.post_date BETWEEN @startDate AND @endDate " + closingEntriesSql +
+     @"
+    GROUP BY at.level2_guid, at.level2_name, at.account_type
+)
+select sum(total_amount)/@numYears as AverageAnnualExpenses from pl_level2_ytd";
+
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                   return await reader.ReadAsync() ? reader.GetDecimal(0) : 0;
+
+                }
+            }
+        }
+
         public async Task<List<BalanceSheetItem>> GetBalanceSheetAsync(List<string> parentAccountGuids)
         {
             if (parentAccountGuids == null || parentAccountGuids.Count == 0)
