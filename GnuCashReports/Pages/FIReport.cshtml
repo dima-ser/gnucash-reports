@@ -16,31 +16,33 @@
         </tr>
     </thead> *@
     <tbody>
-        <tr style="font-size:large">
+        <tr>
             <td>Total Liquid Assets</td>
-            <td><b>@((Model.TotalLiquidAssets).ToString("C0"))
+            <td style="font-size:large">
+                <b>
+                    @((Model.TotalLiquidAssets).ToString("C0"))
                 </b>
             </td>
         </tr>
-        <tr style="font-size:large">
+        <tr >
             <td>Average Annual Expenses</td>
-            <td>
+            <td style="font-size:large">
                 <b>
                     @(Model.AverageAnnualExpenses.ToString("C0"))
                 </b>
             </td>
         </tr>
-        <tr style="font-size:large">
+        <tr >
             <td>Total Needed for FI</td>
-            <td>
+            <td style="font-size:large">
                 <b>
                     @(Model.TotalNeededForFI.ToString("C0"))
                 </b>
             </td>
         </tr>
-        <tr style="font-size:large">
-            <td><b>PROGRESS TOWARDS FI</b></td>
-            <td>
+        <tr>
+            <td><b>Progress Towards FI</b></td>
+            <td style="font-size:large">
                 <b>
                     @((Model.TotalLiquidAssets / Model.TotalNeededForFI).ToString("P1"))
                 </b>
@@ -49,5 +51,5 @@
     </tbody>
 </table>
 <div>
-    *Assuming a @(Model.SafeWithdrawalRate.ToString("P0")) withdrawal rate and @(Model.AvergeExpensesYearsLookback) years lookback period to determine average expenses
+    <i>*Assuming a @(Model.SafeWithdrawalRate.ToString("P0")) withdrawal rate and @(Model.AvergeExpensesYearsLookback) years lookback period to determine average expenses</i>
 </div>
