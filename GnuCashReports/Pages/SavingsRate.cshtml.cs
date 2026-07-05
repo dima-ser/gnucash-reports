@@ -8,7 +8,7 @@ using System.Reflection;
 namespace GnuCashReports.Pages
 {
 
-    public class ChartModel : PageModel
+    public class SavingsRateModel : PageModel
     {
         private readonly DatabaseService _plService;
         private readonly AppSettings _appSettings;
@@ -17,7 +17,7 @@ namespace GnuCashReports.Pages
         public decimal percentSpentPrevYear, percentSavedPrevYear;
         public decimal percentSpentYTD, percentSavedYTD;
 
-        public ChartModel(DatabaseService plService, IOptions<AppSettings> appSettings)
+        public SavingsRateModel(DatabaseService plService, IOptions<AppSettings> appSettings)
         {
             _plService = plService;
             _appSettings = appSettings.Value;
