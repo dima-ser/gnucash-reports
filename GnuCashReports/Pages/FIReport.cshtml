@@ -5,7 +5,7 @@
 }
 @using GnuCashReports.Models
 
-<h1>FI Report</h1>
+<h1 class="text-center">FI Report</h1>
 
 <table class="table">
 @*     <thead>
@@ -18,7 +18,7 @@
     <tbody>
         <tr>
             <td>Total Liquid Assets</td>
-            <td style="font-size:large">
+            <td class="text-end fs-5">
                 <b>
                     @((Model.TotalLiquidAssets).ToString("C0"))
                 </b>
@@ -26,7 +26,7 @@
         </tr>
         <tr >
             <td>Average Annual Expenses</td>
-            <td style="font-size:large">
+            <td class="text-end fs-5">
                 <b>
                     @(Model.AverageAnnualExpenses.ToString("C0"))
                 </b>
@@ -34,7 +34,7 @@
         </tr>
         <tr >
             <td>Total Needed for FI</td>
-            <td style="font-size:large">
+            <td class="text-end fs-5">
                 <b>
                     @(Model.TotalNeededForFI.ToString("C0"))
                 </b>
@@ -42,7 +42,7 @@
         </tr>
         <tr>
             <td><b>Progress Towards FI</b></td>
-            <td style="font-size:large">
+            <td class="text-end fs-5">
                 <b>
                     @((Model.TotalLiquidAssets / Model.TotalNeededForFI).ToString("P1"))
                 </b>
