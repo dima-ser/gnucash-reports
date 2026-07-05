@@ -34,12 +34,8 @@
                 command.Parameters.Add(new SqliteParameter("@prevEnd", new DateTime(DateTime.Now.Year, 1, 1)));
                 command.Parameters.Add(new SqliteParameter("@incomeGuid", _appSettings.IncomeRootAccountGuid));
                 command.Parameters.Add(new SqliteParameter("@expenseGuid", _appSettings.ExpenseRootAccountGuid));
-                string closingEntriesSql = "";
-                if (_appSettings.ClosingEntriesPattern != null)
-                {
-                    command.Parameters.Add(new SqliteParameter("@ignorePattern", _appSettings.ClosingEntriesPattern));
-                    closingEntriesSql = " and description not like @ignorePattern ";
-                }
+               command.Parameters.Add(new SqliteParameter("@ignorePattern", 
+               !String.IsNullOrWhiteSpace(_appSettings.ClosingEntriesPattern) ? _appSettings.ClosingEntriesPattern : DBNull.Value));
                 command.CommandText = @"
             WITH RECURSIVE account_tree AS (
     SELECT a.guid, a.name, a.parent_guid, a.account_type,
@@ -61,8 +57,9 @@ pl_level2_ytd AS (
     FROM splits s
     JOIN transactions t ON s.tx_guid = t.guid
     JOIN account_tree at ON s.account_guid = at.guid
-    WHERE t.post_date BETWEEN @ytdStart AND @ytdEnd " + closingEntriesSql +
-    @"GROUP BY at.level2_guid, at.level2_name, at.account_type
+    WHERE t.post_date BETWEEN @ytdStart AND @ytdEnd
+        AND ( @ignorePattern IS NULL OR description NOT LIKE @ignorePattern )
+    GROUP BY at.level2_guid, at.level2_name, at.account_type
 ),
 pl_level2_prev_year AS (
     SELECT at.level2_guid, at.level2_name AS account_name,
@@ -71,8 +68,9 @@ pl_level2_prev_year AS (
     FROM splits s
     JOIN transactions t ON s.tx_guid = t.guid
     JOIN account_tree at ON s.account_guid = at.guid
-    WHERE t.post_date BETWEEN @prevStart AND @prevEnd " + closingEntriesSql + 
-    @"GROUP BY at.level2_guid, at.level2_name, at.account_type
+    WHERE t.post_date BETWEEN @prevStart AND @prevEnd
+        AND ( @ignorePattern IS NULL OR description NOT LIKE @ignorePattern )
+    GROUP BY at.level2_guid, at.level2_name, at.account_type
 )
 SELECT ytd.account_type, ytd.account_name, ytd.total_amount as ytd_amount, prev.total_amount as prev_year_amount
 FROM pl_level2_ytd as ytd left JOIN pl_level2_prev_year as prev on ytd.level2_guid=prev.level2_guid
@@ -121,12 +119,8 @@ FROM pl_level2_prev_year as prev left JOIN pl_level2_ytd as ytd on ytd.level2_gu
                 DateTime endDate = new DateTime(DateTime.Now.Year, 1, 1);
                 command.Parameters.Add(new SqliteParameter("@startDate", startDate));
                 command.Parameters.Add(new SqliteParameter("@endDate", endDate));
-                string closingEntriesSql = "";
-                if (_appSettings.ClosingEntriesPattern != null)
-                {
-                    command.Parameters.Add(new SqliteParameter("@ignorePattern", _appSettings.ClosingEntriesPattern));
-                    closingEntriesSql = " and description not like @ignorePattern ";
-                }
+                command.Parameters.Add(new SqliteParameter("@ignorePattern", 
+                    !String.IsNullOrWhiteSpace(_appSettings.ClosingEntriesPattern) ? _appSettings.ClosingEntriesPattern : DBNull.Value));
                 command.CommandText = @"
             WITH RECURSIVE
 root_guid as (select guid from accounts where parent_guid is NULL and name='Root Account'),
@@ -151,8 +145,8 @@ pl_level2_ytd AS (
     FROM splits s
     JOIN transactions t ON s.tx_guid = t.guid
     JOIN account_tree at ON s.account_guid = at.guid
-    WHERE t.post_date BETWEEN @startDate AND @endDate " + closingEntriesSql +
-     @"
+    WHERE t.post_date BETWEEN @startDate AND @endDate
+           AND ( @ignorePattern IS NULL OR description NOT LIKE @ignorePattern )
     GROUP BY at.level2_guid, at.level2_name, at.account_type
 )
 select sum(total_amount)/@numYears as AverageAnnualExpenses from pl_level2_ytd";
