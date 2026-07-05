@@ -9,7 +9,7 @@ using System.Reflection;
 namespace GnuCashReports.Pages
 {
 
-    public class AssetAllocationModel : PageModel
+    public class InvestmentsModel : PageModel
     {
         private readonly DatabaseService _dbService;
         private readonly AppSettings _appSettings;
@@ -24,7 +24,7 @@ namespace GnuCashReports.Pages
         public decimal RebalanceRelativePercentage;
         public bool RebalanceUS, RebalanceIntnl, RebalanceBonds;
         public string NetChangeInterval, NetChangeInterval2, NetChangeIntervalUserFriendly, NetChangeIntervalUserFriendly2;
-        public AssetAllocationModel(DatabaseService dbService, IOptions<AppSettings> appSettings)
+        public InvestmentsModel(DatabaseService dbService, IOptions<AppSettings> appSettings)
         {
             if (appSettings.Value.InvestmentSettings == null)
                 throw new Exception("Missing configuration: " + typeof(InvestmentSettings).ToString());
