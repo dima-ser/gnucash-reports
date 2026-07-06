@@ -62,7 +62,13 @@ namespace GnuCashReports.Pages
 
         public async Task OnGetAsync()
         {
-            List<BalanceSheetItem> balanceSheetData = await _dbService.GetInvestmentsAsync(_appSettings.InvestmentSettings!.InvestmentRootAccountGuids,
+            List<string> investmentParentAccounts = _appSettings.InvestmentSettings!.InvestmentParentAccounts;
+            List<string> investmentParentGuids = new List<string>();
+            foreach (string accountName in investmentParentAccounts)
+            {
+                investmentParentGuids.Add(await _dbService.GetAccountGuid(accountName));
+            }
+            List<BalanceSheetItem> balanceSheetData = await _dbService.GetInvestmentsAsync(investmentParentGuids,
                 NetChangeInterval, NetChangeInterval2, _appSettings.InvestmentSettings!.TimeOfDayCutoff);
 
             foreach (var balanceSheetItem in balanceSheetData)

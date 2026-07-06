@@ -399,7 +399,7 @@ FROM balances";
             }
         }
 
-        public async Task<List<BalanceSheetItem>> GetInvestmentsAsync(List<string> investmentRootAccountGuids, string netChangeInterval, string netChangeInterval2, TimeSpan cutoffTime)
+        public async Task<List<BalanceSheetItem>> GetInvestmentsAsync(List<string> investmentParentAccountGuids, string netChangeInterval, string netChangeInterval2, TimeSpan cutoffTime)
         {
             var results = new List<BalanceSheetItem>();
 
@@ -408,11 +408,10 @@ FROM balances";
                 await connection.OpenAsync();
 
                 var command = connection.CreateCommand();
-                //List<string> investmentRootAccountGuids = _appSettings.InvestmentRootAccountGuids;
                 StringBuilder sqlInList = new StringBuilder("");
-                for (int i = 0; i < investmentRootAccountGuids.Count; i++)
+                for (int i = 0; i < investmentParentAccountGuids.Count; i++)
                 {
-                    command.Parameters.Add(new SqliteParameter("@guid"+i, investmentRootAccountGuids[i]));
+                    command.Parameters.Add(new SqliteParameter("@guid"+i, investmentParentAccountGuids[i]));
                     sqlInList.Append("@guid" + i + ",");
                 }
                 sqlInList.Remove(sqlInList.Length - 1, 1); // remove the last comma
@@ -583,6 +582,63 @@ select max(date) as date, 'price' as date_type from prices";
                         }
                     }
                     return result;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns account guid based on full account path
+        /// </summary>
+        /// <param name="fullAccountPath">Full account path, delimited with colons. For example, Assets:Cash:Checking</param>
+        /// <returns></returns>
+        public async Task<string> GetAccountGuid(string fullAccountPath)
+        {
+            using (var connection = new SqliteConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+
+                var command = connection.CreateCommand();
+                command.Parameters.Add(new SqliteParameter("@fullAccountPath", fullAccountPath));
+                command.CommandText = @"WITH RECURSIVE account_paths AS (
+    SELECT
+        guid,
+        parent_guid,
+        name,
+        CASE
+            WHEN account_type = 'ROOT' THEN ''
+            ELSE name
+        END AS full_path
+    FROM accounts
+    WHERE parent_guid IS NULL
+
+    UNION ALL
+
+    SELECT
+        a.guid,
+        a.parent_guid,
+        a.name,
+        CASE
+            WHEN ap.full_path = ''
+                THEN a.name
+            ELSE ap.full_path || ':' || a.name
+        END
+    FROM accounts a
+    JOIN account_paths ap
+        ON a.parent_guid = ap.guid
+)
+SELECT guid
+FROM account_paths
+WHERE full_path = @fullAccountPath";
+
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    if (reader.HasRows)
+                    {
+                        await reader.ReadAsync();
+                        return reader.GetString(0);
+                    }
+                    else
+                        throw new Exception("No account found with path \"" + fullAccountPath);
                 }
             }
         }

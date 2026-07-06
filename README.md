@@ -48,11 +48,11 @@ Number of years to display on net worth chart (including current year to date).
 ## InvestmentSettings [optional]
 These are required for the "Investments" report. If you don't track investments in GnuCash, you can omit this whole section. However, if any of these are configured, the rest are required as well.
 
-### InvestmentRootAccountGuids
-These are GUIDs of all your root investement accounts in GnuCash/accounts you want to treat as "Investments" and be included in the "Asset Allocation" report. All child accounts are included automatically, so only parent GUIDs are required. At least one is required, but you can have as many as needed.
+### InvestmentParentAccounts
+Full colon-delimited paths to all your parent investement accounts in GnuCash/accounts you want to treat as "Investments" and be included in the "Asset Allocation" report. For example: `Assets:Investments:Brokerage`. All child accounts are included automatically, so only parents are required. At least one is required, but you can have as many as needed.
 
 ### InvestmentAssetAllocations
-This section is used to let the application know what portion of each investment account is US Stock, International Stock and Bonds. All your investment accounts (including children of InvestmentRootAccountGuids) need to be configured here. Use account name for the "Name" property (can be the same as stock/fund ticker, but not necesserily). For example, if you hold VTSAX (which is 100% US Stock), you'd configure it like so (assuming account name in GnuCash is also "VTSAX"):
+This section is used to let the application know what portion of each investment account is US Stock, International Stock and Bonds. All your investment accounts (including children of `InvestmentParentAccounts`) need to be configured here. Use account name for the "Name" property (can be the same as stock/fund ticker, but not necesserily). For example, if you hold VTSAX (which is 100% US Stock), you'd configure it like so (assuming account name in GnuCash is also "VTSAX"):
 ```json
  {
     "Name": "VTSAX",
@@ -76,7 +76,7 @@ The total percentage for each account must add up to 100 (the app will throw an 
 Use this to set your overall desired asset allocation between all investment accounts. This will be used to determine whether you need to rebalance. The "Name" property can be anything here. Just like with individual accounts, the total percentage must add up to 100.
 
 ### ExcludedAccounts
-List accounts you want to exclude from being counted as investments. Useful when you have temporary/sweep accounts under your investment root accounts.
+List account names (without the full path) you want to exclude from being counted as investments. Useful when you have temporary/sweep accounts under your investment root accounts.
 
 ### RebalanceRelativePercentage
 This is the **relative** percentage each asset class can deviate from your target allocation before the report will tell you to rebalance (see https://www.bogleheads.org/wiki/Rebalancing). For example, set this to 20 if you want to rebalance any time an asset class deviates from target by 20% relative to its target. Only relative percentage is supported at this time. The report will also tell you how far off you are in absolute percentage as well as dollar amounts, so you can still use the report to see if you need to rebalance even if you use a different rebalancing strategy.
@@ -88,10 +88,10 @@ This is a time interval to look back to determine the change in overall investme
 The investment balance is assumed to only update once a day. This feature also relies on the assumption you update prices in GnuCash at the same time every day (either manually or via a script). In order to accurately calculate daily balance changes, the program needs to know when your prices are updated. Set this to a time of day right after your prices are updated so that the program can tell whether it's looking at yesterday's or today's prices. If you hold mutual funds that update prices daily, you'll want to update your prices after the stock market closes for the day. For example, if you update your prices at 3:50pm (15:50) daily, set this to "16:00" so that the program can start showing the net daily balance change at 4pm. 
 
 ## FISettings [optional]
-These are used for FI (Financial Independence) Report which shows your progress towards financial independence. You can remove this section. However, if this section is present, all sub-settings will be required.
+These are used for FI (Financial Independence) Report which shows your progress towards financial independence. You can remove this section if you won't use the FI Report. However, if this section is present, all sub-settings will be required.
 
-### AssetAccountGuids
-List of account guids that you want included into your "total liquid assets" number. These would typically be all your cash and investments accounts, excluding any fixed assets like house.
+### LiquidAssetParentAccounts
+List of colon-delimited full account paths that you want included into your "total liquid assets" number. These would typically be all your cash and investments accounts, excluding any fixed assets like house. For example, `Assets:Cash:Checking`, `Assets:Investments:Brokerage`.
 ### SafeWithdrawalRate
 Percentage of your portfolio you intend to withdraw yearly once you're retired/financialy independent. The typical number for this is 0.04 (4%). This (in combination with `AverageExpensesYearsLookback`) is used to calculate how far along you are towards reaching the number when your annual expenses are 4% of your portfolio.
 ### AverageExpensesYearsLookback

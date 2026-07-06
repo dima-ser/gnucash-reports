@@ -34,7 +34,7 @@ namespace GnuCashReports.Models
 
     public class InvestmentSettings
     {
-        public required List<string> InvestmentRootAccountGuids { get; set; }
+        public required List<string> InvestmentParentAccounts { get; set;}
         public required List<AssetAllocation> InvestmentAssetAllocations { get; set; }
         public required AssetAllocation TargetAssetAllocation { get; set; }
         public required List<string>? ExcludedAccounts { get; set; }
@@ -46,7 +46,7 @@ namespace GnuCashReports.Models
 
     public class  FISettings
     {
-        public required List<string> AssetAccountGuids { get; set; }
+        public required List<string> LiquidAssetParentAccounts { get; set; }
         public required decimal SafeWithdrawalRate { get; set; }
 
         public required int AverageExpensesYearsLookback { get; set; }
@@ -75,9 +75,10 @@ namespace GnuCashReports.Models
                 return ValidateOptionsResult.Fail("NetWorthYearsToDisplay must be positive");
             if (settings.InvestmentSettings != null)
             {
-                if (settings.InvestmentSettings.InvestmentRootAccountGuids == null || settings.InvestmentSettings.InvestmentRootAccountGuids.Count < 1)
+
+                if (settings.InvestmentSettings.InvestmentParentAccounts == null || settings.InvestmentSettings.InvestmentParentAccounts.Count < 1)
                 {
-                    return ValidateOptionsResult.Fail("Missing configuration: InvestmentRootAccountGuids (at least 1 is required)");
+                    return ValidateOptionsResult.Fail("Missing configuration: InvestmentParentAccounts (at least 1 is required)");
                 }
                 if (settings.InvestmentSettings.InvestmentAssetAllocations == null)
                 {
@@ -105,9 +106,9 @@ namespace GnuCashReports.Models
             }
             if (settings.FISettings != null)
             {
-                if (settings.FISettings.AssetAccountGuids == null || settings.FISettings.AssetAccountGuids.Count < 1)
+                if (settings.FISettings.LiquidAssetParentAccounts == null || settings.FISettings.LiquidAssetParentAccounts.Count < 1)
                 {
-                    return ValidateOptionsResult.Fail("Missing configuration: FISettings.AssetAccountGuids (at least 1 is required)");
+                    return ValidateOptionsResult.Fail("Missing configuration: FISettings.LiquidAssetParentAccounts (at least 1 is required)");
                 }
                 if (settings.FISettings.SafeWithdrawalRate <= 0 || settings.FISettings.SafeWithdrawalRate >= 1)
                     return ValidateOptionsResult.Fail("FISettings.SafeWithdrawalRate must be between 0 and 1");

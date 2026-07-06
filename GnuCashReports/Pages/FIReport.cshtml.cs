@@ -33,10 +33,15 @@ namespace GnuCashReports.Pages
             {
                 throw new InvalidOperationException("FISettings section is missing in appsettings.json. Please check your configuration.");
             }
-            List<string> guids = _appSettings.FISettings.AssetAccountGuids ?? new List<string>();
-            if (guids.Count == 0)
+            List<string> liquidAssetParentAccounts = _appSettings.FISettings.LiquidAssetParentAccounts ?? new List<string>();
+            if (liquidAssetParentAccounts.Count == 0)
             {
-                throw new InvalidOperationException("No asset account GUIDs configured for FI report. Please check your appsettings.json configuration.");
+                throw new InvalidOperationException("No LiquidAssetParentAccounts configured for FI report. Please check your appsettings.json configuration.");
+            }
+            List<string> guids = new List<string>();
+            foreach (string accountName in liquidAssetParentAccounts)
+            {
+                guids.Add(await _dbService.GetAccountGuid(accountName));
             }
             LiquidAssetsData = await _dbService.GetBalanceSheetAsync(guids);
             TotalLiquidAssets = LiquidAssetsData.Sum(item => item.Balance);
