@@ -21,7 +21,7 @@
             <tr>
                 <td><span style="vertical-align:2px">@(Model.ExpenseAccountEmojis != null && Model.ExpenseAccountEmojis.ContainsKey(item.AccountName) ? Model.ExpenseAccountEmojis[item.AccountName]+" " : "")</span>@item.AccountName </td>
                 <td>@item.TotalAmountPrevYear.ToString("C0")</td>
-                <td class="text-end" @((item.TotalAmountYTD / (decimal)(DateTime.Now.Month / 12.0) > item.TotalAmountPrevYear) ? Html.Raw("class=\"text-danger\"") : "")>@item.TotalAmountYTD.ToString("C0")</td>
+                <td class="text-end @((item.TotalAmountYTD / (decimal)(DateTime.Now.Month / 12.0) > item.TotalAmountPrevYear) ? "text-danger" : "" )">@item.TotalAmountYTD.ToString("C0")</td>
             </tr>
         }
         <tr>
