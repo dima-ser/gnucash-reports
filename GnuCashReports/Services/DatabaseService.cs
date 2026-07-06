@@ -32,8 +32,7 @@
                 command.Parameters.Add(new SqliteParameter("@ytdEnd", new DateTime(DateTime.Now.Year + 1, 1, 1))); // include future-dated transaction until the end of current year
                 command.Parameters.Add(new SqliteParameter("@prevStart", new DateTime(DateTime.Now.Year - 1, 1, 1)));
                 command.Parameters.Add(new SqliteParameter("@prevEnd", new DateTime(DateTime.Now.Year, 1, 1)));
-                command.Parameters.Add(new SqliteParameter("@incomeGuid", _appSettings.IncomeRootAccountGuid));
-                command.Parameters.Add(new SqliteParameter("@expenseGuid", _appSettings.ExpenseRootAccountGuid));
+                command.Parameters.Add(new SqliteParameter("@rootAccountName", _appSettings.RootAccountName));
                command.Parameters.Add(new SqliteParameter("@ignorePattern", 
                !String.IsNullOrWhiteSpace(_appSettings.ClosingEntriesPattern) ? _appSettings.ClosingEntriesPattern : DBNull.Value));
                 command.CommandText = @"
@@ -41,8 +40,10 @@
     SELECT a.guid, a.name, a.parent_guid, a.account_type,
            a.guid AS level2_guid, a.name AS level2_name
     FROM accounts a
-    WHERE a.parent_guid IN (@incomeGuid,@expenseGuid)
-
+    WHERE a.parent_guid IN (
+		(select guid from accounts where account_type='INCOME' and parent_guid=(select guid from accounts where account_type='ROOT' and name=@rootAccountName)),
+		(select guid from accounts where account_type='EXPENSE' and parent_guid=(select guid from accounts where account_type='ROOT' and name=@rootAccountName))
+	)
     UNION ALL
 
     SELECT a.guid, a.name, a.parent_guid, a.account_type,
@@ -159,6 +160,41 @@ select sum(total_amount)/@numYears as AverageAnnualExpenses from pl_level2_ytd";
             }
         }
 
+        
+        public async Task<List<BalanceSheetItem>> GetBalanceSheetAsync()
+        {
+            //var results = new List<BalanceSheetItem>();
+            List<string> rootBalanceSheetAccountGuids = new List<string>();
+            using (var connection = new SqliteConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                var command = connection.CreateCommand();
+                command.Parameters.Add(new SqliteParameter("@rootAccountName", _appSettings.RootAccountName));
+                command.CommandText = @"select guid from accounts where account_type in ('ASSET','LIABILITY') 
+                and parent_guid=(select guid from accounts where account_type='ROOT' and name=@rootAccountName)";
+
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    if (reader.HasRows)
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            rootBalanceSheetAccountGuids.Add(reader.GetString(0));
+                        }
+                        return await GetBalanceSheetAsync(rootBalanceSheetAccountGuids);
+                    }
+                    else
+                        throw new Exception("No root accounts found for ASSET and LIABILITY. Please make sure the root account name is configured correctly"); 
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns a balance sheet for specified list of account Guids
+        /// </summary>
+        /// <param name="parentAccountGuids"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
         public async Task<List<BalanceSheetItem>> GetBalanceSheetAsync(List<string> parentAccountGuids)
         {
             if (parentAccountGuids == null || parentAccountGuids.Count == 0)
@@ -181,8 +217,6 @@ select sum(total_amount)/@numYears as AverageAnnualExpenses from pl_level2_ytd";
                     else
                         sqlInList += "@guid" + i;
                 }
-                //command.Parameters.Add(new SqliteParameter("@assetGuid", _appSettings.AssetRootAccountGuid));
-                //command.Parameters.Add(new SqliteParameter("@liabilityGuid", _appSettings.LiabilityRootAccountGuid));
                 command.CommandText = @"WITH RECURSIVE account_tree AS (
     -- Level 2 accounts (direct children of top-level)
     SELECT 
@@ -283,8 +317,7 @@ ORDER BY general_account_type, account_code;";
                 await connection.OpenAsync();
 
                 var command = connection.CreateCommand();
-                command.Parameters.Add(new SqliteParameter("@assetGuid", _appSettings.AssetRootAccountGuid));
-                command.Parameters.Add(new SqliteParameter("@liabilityGuid", _appSettings.LiabilityRootAccountGuid));
+                command.Parameters.Add(new SqliteParameter("@rootAccountName", _appSettings.RootAccountName));
                 DateOnly priceDate = date.AddDays(1); // to make the prices reflect end of day price
                 command.Parameters.Add(new SqliteParameter("@transDate", date));
                 command.Parameters.Add(new SqliteParameter("@priceDate", priceDate));
@@ -301,8 +334,10 @@ ORDER BY general_account_type, account_code;";
         a.name AS level2_name,
 		a.code AS level2_code
     FROM accounts a
-    WHERE a.guid IN (@assetGuid, @liabilityGuid)
-
+    WHERE a.guid IN (
+		(select guid from accounts where account_type='ASSET' and parent_guid=(select guid from accounts where account_type='ROOT' and name=@rootAccountName)),
+		(select guid from accounts where account_type='LIABILITY' and parent_guid=(select guid from accounts where account_type='ROOT' and name=@rootAccountName))
+		)
     UNION ALL
 
     -- Descendants of root accounts

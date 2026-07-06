@@ -20,10 +20,7 @@ namespace GnuCashReports.Models
             RegexOptions.IgnoreCase | RegexOptions.Compiled
         );
         public required string GnuCashDbConnectionString { get; set; }
-        public required string IncomeRootAccountGuid { get; set; }
-        public required string ExpenseRootAccountGuid { get; set; }
-        public required string AssetRootAccountGuid { get; set; }
-        public required string LiabilityRootAccountGuid { get; set; }
+        public required string RootAccountName { get; set; }
         public string? ClosingEntriesPattern { get; set; }
         public decimal TargetSavingsPercentage { get; set; }
         public List<string>? ExcludedIncomeAccountsFromSavingRate { get; set; }
@@ -66,21 +63,9 @@ namespace GnuCashReports.Models
             {
                 return ValidateOptionsResult.Fail("Missing configuration: GnuCashDbConnectionString");
             }
-            if (settings.IncomeRootAccountGuid == null)
+            if (String.IsNullOrEmpty(settings.RootAccountName))
             {
-                return ValidateOptionsResult.Fail("Missing configuration: IncomeRootAccountGuid");
-            }
-            if (settings.ExpenseRootAccountGuid == null)
-            {
-                return ValidateOptionsResult.Fail("Missing configuration: ExpenseRootAccountGuid");
-            }
-            if (settings.AssetRootAccountGuid == null)
-            {
-                return ValidateOptionsResult.Fail("Missing configuration: AssetRootAccountGuid");
-            }
-            if (settings.LiabilityRootAccountGuid == null)
-            {
-                return ValidateOptionsResult.Fail("Missing configuration: LiabilityRootAccountGuid");
+                return ValidateOptionsResult.Fail("Missing configuration: RootAccountName");
             }
             if (settings.TargetSavingsPercentage < 0 || settings.TargetSavingsPercentage > 100)
                 return ValidateOptionsResult.Fail("TargetSavingsPercentage must be between 0 and 100");

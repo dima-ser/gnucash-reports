@@ -22,10 +22,7 @@ namespace GnuCashReports.Pages
 
         public async Task OnGetAsync()
         {
-            List<string> guids = new List<string>();
-            guids.Add(_appSettings.AssetRootAccountGuid);
-            guids.Add(_appSettings.LiabilityRootAccountGuid);   
-            BalanceSheetData = await _dbService.GetBalanceSheetAsync(guids);
+            BalanceSheetData = await _dbService.GetBalanceSheetAsync();
         }
     }
 

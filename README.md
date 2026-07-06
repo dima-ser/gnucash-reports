@@ -23,23 +23,18 @@ services:
 Build and start the project with `docker compose up -d`. The web interface should be available on http://[your-docker-host-name]:8085. If you get any errors, check container logs and refer to configuration documentation below to resolve. For HTTPS (required if you want to embed reports in HomeAssistant), use a reverse proxy.
 
 # Configuration
-The application is configured via `appsettings.json` file. Use the sample config file provided below to create your file and adjust as needed.
+The application is configured via `appsettings.json` file. Rename the provided `appsettings.Sample.json` to `appsettings.json` and modify as needed.
 
 `Logging` and `AllowedHosts` sections are standard .NET configs, can be left at default. All app-specifc configuration is under `AppSettings` section.
 
 ## GnuCashDbConnectionString [required]
 Connection string to your GnuCash database (must be a Sqlite db). If running in Docker, leave this as is and instead, map the path in your docker-compose file.
 
-## IncomeRootAccountGuid, ExpenseRootAccountGuid, AssetRootAccountGuid, LiabilityRootAccountGuid [all required]
-These are GUIDs of your root income, expense, asset and liability accounts in GnuCash database. You have to use a tool such as **Db Browser for SQLite** to find these for your database. These would all be directly under the ROOT account. This Sqlite query can be used to find these:
-```sql
-select * from accounts 
-where parent_guid=(select guid from accounts where account_type='ROOT' and name='Root Account')
-and account_type in ('ASSET','LIABILITY','INCOME','EXPENSE')
-```
+## RootAccountName [required]
+This is the name of your root account in the database. This should normally be set to `Root Account` unless you changed it in your database.
 
 ## ClosingEntriesPattern [optional]
-If you are using GnuCash's "Close Book" feature, you'll need to specify your closing entries description pattern to ignore those transactions, otherwise the reports will be inaccurate. Used as argument for `not like` SQL condition, so if all your closing entries start with `Closing`, you'd specify `Closing%`. Remove this paramater if your database does not have closing entries
+If you are using GnuCash's "Close Book" feature, you'll need to specify your closing entries description pattern to ignore those transactions, otherwise the reports will be inaccurate. Used as argument for `not like` SQL condition, so if all your closing entries start with `Closing`, you'd specify `Closing%`. Remove this paramater or set it to empty string if your database does not have closing entries
 
 ## TargetSavingsPercentage [optional]
 This is used in the "Available to Spend" report to show amount available to spend this year based on your desired savings percentage rate. For example, set this to 50 if you're targeting to save 50% of you income. If not provided, it will default to 0.
@@ -47,11 +42,11 @@ This is used in the "Available to Spend" report to show amount available to spen
 ## ExpenseAccountEmojis [optional]
 These are used in your expense reports to make them easier to see at a glance and to shorten account names to better fit on the expense chart. Used in the expense report to prepend account names and in the expense chart instead of account names to save space. If omitted for a particular expense account, account name will be used instead. This section is optional.
 
-## NetWorthYearsToDisplay
+## NetWorthYearsToDisplay [required]
 Number of years to display on net worth chart (including current year to date).
 
 ## InvestmentSettings [optional]
-These are required for "Asset Allocation" report. If you don't track investments in GnuCash, you can omit this whole section. However, if any of these are configured, the rest are required as well.
+These are required for the "Investments" report. If you don't track investments in GnuCash, you can omit this whole section. However, if any of these are configured, the rest are required as well.
 
 ### InvestmentRootAccountGuids
 These are GUIDs of all your root investement accounts in GnuCash/accounts you want to treat as "Investments" and be included in the "Asset Allocation" report. All child accounts are included automatically, so only parent GUIDs are required. At least one is required, but you can have as many as needed.
@@ -87,76 +82,17 @@ List accounts you want to exclude from being counted as investments. Useful when
 This is the **relative** percentage each asset class can deviate from your target allocation before the report will tell you to rebalance (see https://www.bogleheads.org/wiki/Rebalancing). For example, set this to 20 if you want to rebalance any time an asset class deviates from target by 20% relative to its target. Only relative percentage is supported at this time. The report will also tell you how far off you are in absolute percentage as well as dollar amounts, so you can still use the report to see if you need to rebalance even if you use a different rebalancing strategy.
 
 ## NetChangeInterval and NetChangeInterval2
-This is a time interval to look back to determine the change in overall investment balance since the beginning of the interval. Only two intervals are supported at this time. This must be one of the following: "-[n] day(s)|month(s)|year(s)" or "start of day|month|year". For example: "-1 day", "-6 months", "start of year", etc. Note that this won't show your investments' rate of return, but the actual balance change, including contributions and investment growth.
+This is a time interval to look back to determine the change in overall investment balance since the beginning of the interval. Only two intervals are supported at this time. This must be one of the following: "-[n] day(s)|month(s)|year(s)" or "start of day|month|year". For example: "-1 day", "-6 months", "start of year", etc. Note that this won't show your investments' rate of return, but the overall balance change, including contributions/withdrawals and investment growth/losses.
 
 ## TimeOfDayCutoff
 The investment balance is assumed to only update once a day. This feature also relies on the assumption you update prices in GnuCash at the same time every day (either manually or via a script). In order to accurately calculate daily balance changes, the program needs to know when your prices are updated. Set this to a time of day right after your prices are updated so that the program can tell whether it's looking at yesterday's or today's prices. If you hold mutual funds that update prices daily, you'll want to update your prices after the stock market closes for the day. For example, if you update your prices at 3:50pm (15:50) daily, set this to "16:00" so that the program can start showing the net daily balance change at 4pm. 
 
-## Sample appsettings.json file
-```json
-{
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft.AspNetCore": "Warning"
-    }
-  },
-  "AllowedHosts": "*",
-  "AppSettings": {
-    "GnuCashDbConnectionString": "Data Source=sqlite/gnucash.sqlite",
-    "IncomeRootAccountGuid": "6d2bb682fb3649b3b8c84b4232fea511",
-    "ExpenseRootAccountGuid": "0e1756401cd14f68be156196928476f4",
-    "AssetRootAccountGuid": "0a19379c161a4c18b96bfb41ab9c0679",
-    "LiabilityRootAccountGuid": "772af8022dd44907acbf28f4970d9163",
-    "ClosingEntriesPattern": "Closing%",
-    "TargetSavingsPercentage": 50,
-    "ExpenseAccountEmojis": {
-      "Auto": "🚗",
-      "Food": "🍔",
-      "Household": "🧻",
-      "Medical Expenses": "🏥",
-      "Taxes": "💰",
-      "Travel": "🛫"
-    },
-    "InvestmentSettings": {
-      "InvestmentRootAccountGuids": [ "12a13591eee247f4bd47047b64cea878", "848e25e11a9d4453be38544dfa95025b" ],
-      "InvestmentAssetAllocations": [
-        {
-          "Name": "VBTLX",
-          "US": 0,
-          "INTNL": 0,
-          "BND": 100
-        },
-        {
-          "Name": "VXUS",
-          "US": 0,
-          "INTNL": 100,
-          "BND": 0
-        },
-        {
-          "Name": "VTSAX",
-          "US": 100,
-          "INTNL": 0,
-          "BND": 0
-        },
-        {
-          "Name": "VFFVX",
-          "US": 54,
-          "INTNL": 36,
-          "BND": 10
-        }
-      ],
-      "TargetAssetAllocation": {
-        "Name": "Target Asset Allocation",
-        "US": 70,
-        "INTNL": 20,
-        "BND": 10
-      },
-      "RebalanceRelativePercentage": 20,
-      "NetChangeInterval": "-1 day",
-      "NetChangeInterval2": "-7 days",
-      "TimeOfDayCutoff": "16:00"
-    }
-  }
-}
-```
+## FISettings [optional]
+These are used for FI (Financial Independence) Report which shows your progress towards financial independence. You can remove this section. However, if this section is present, all sub-settings will be required.
+
+### AssetAccountGuids
+List of account guids that you want included into your "total liquid assets" number. These would typically be all your cash and investments accounts, excluding any fixed assets like house.
+### SafeWithdrawalRate
+Percentage of your portfolio you intend to withdraw yearly once you're retired/financialy independent. The typical number for this is 0.04 (4%). This (in combination with `AverageExpensesYearsLookback`) is used to calculate how far along you are towards reaching the number when your annual expenses are 4% of your portfolio.
+### AverageExpensesYearsLookback
+Number of years to look back to determine your average annual expenses. This (in combinatin with `SafeWithdrawalRate`) will be used to calculate how far along you are towards your FIRE number.
