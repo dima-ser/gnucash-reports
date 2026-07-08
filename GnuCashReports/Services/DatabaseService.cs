@@ -154,8 +154,10 @@ select sum(total_amount)/@numYears as AverageAnnualExpenses from pl_level2_ytd";
 
                 using (var reader = await command.ExecuteReaderAsync())
                 {
-                   return await reader.ReadAsync() ? reader.GetDecimal(0) : 0;
-
+                    if (reader.HasRows)
+                        return await reader.ReadAsync() && reader[0] != DBNull.Value ? reader.GetDecimal(0) : 0;
+                    else
+                        return 0;
                 }
             }
         }

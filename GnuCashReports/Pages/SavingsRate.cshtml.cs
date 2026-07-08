@@ -30,7 +30,10 @@ namespace GnuCashReports.Pages
 
             decimal spentPrevYear = ProfitLossData.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_EXPENSE).Sum(i => i.TotalAmountPrevYear);
             decimal totalPrevYear = -ProfitLossData.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_INCOME).Where(i => !exludedIncomeAccounts.Contains(i.AccountName)).Sum(i => i.TotalAmountPrevYear);
-            percentSpentPrevYear = Math.Round((spentPrevYear / totalPrevYear) * 100, 1);
+            if (totalPrevYear != 0)
+                percentSpentPrevYear = Math.Round((spentPrevYear / totalPrevYear) * 100, 1);
+            else
+                percentSpentPrevYear = 100; // to avoid division by zero.
             percentSavedPrevYear = 100 - percentSpentPrevYear;
             decimal spentYTD = ProfitLossData.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_EXPENSE).Sum(i => i.TotalAmountYTD);
             decimal totalYTD = -ProfitLossData.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_INCOME).Where(i => !exludedIncomeAccounts.Contains(i.AccountName)).Sum(i => i.TotalAmountYTD);

@@ -17,6 +17,7 @@ namespace GnuCashReports.Pages
         public decimal TotalLiquidAssets { get; set; }
         public decimal AverageAnnualExpenses { get; set; }
         public decimal TotalNeededForFI { get; set; }
+        public decimal ProgressTowardsFI { get; set; }
 
         public decimal SafeWithdrawalRate { get; set; }
         public decimal AvergeExpensesYearsLookback { get; set; }
@@ -49,6 +50,11 @@ namespace GnuCashReports.Pages
             SafeWithdrawalRate = _appSettings.FISettings.SafeWithdrawalRate;
             TotalNeededForFI = AverageAnnualExpenses / SafeWithdrawalRate;
             AvergeExpensesYearsLookback = _appSettings.FISettings.AverageExpensesYearsLookback;
+
+            if (TotalNeededForFI > 0)
+                ProgressTowardsFI = TotalLiquidAssets / TotalNeededForFI;
+            else
+                ProgressTowardsFI = 1; // you're ready to retire since your average expenses are 0
         }
     }
 
