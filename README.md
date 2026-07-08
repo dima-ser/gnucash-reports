@@ -76,7 +76,7 @@ The total percentage for each account must add up to 100 (the app will throw an 
 Use this to set your overall desired asset allocation between all investment accounts. This will be used to determine whether you need to rebalance. The "Name" property can be anything here. Just like with individual accounts, the total percentage must add up to 100.
 
 ### ExcludedAccounts
-List account names (without the full path) you want to exclude from being counted as investments. Useful when you have temporary/sweep accounts under your investment root accounts.
+List account names (without the full path) you want to exclude from being counted as investments. Useful when you have temporary/sweep accounts under your investment root accounts. Note: this only excludes accounts themselves, not children.
 
 ### RebalanceRelativePercentage
 This is the **relative** percentage each asset class can deviate from your target allocation before the report will tell you to rebalance (see https://www.bogleheads.org/wiki/Rebalancing). For example, set this to 20 if you want to rebalance any time an asset class deviates from target by 20% relative to its target. Only relative percentage is supported at this time. The report will also tell you how far off you are in absolute percentage as well as dollar amounts, so you can still use the report to see if you need to rebalance even if you use a different rebalancing strategy.
