@@ -1,0 +1,49 @@
+﻿@page
+@model CashflowModel
+@{
+    ViewData["Title"] = "Cash Flow";
+}
+@using GnuCashReports.Models
+
+<h1 class="text-center">Cash Flow</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col"></th>
+            <th scope="col">@(DateTime.Now.Year - 1)</th>
+            <th class="text-end" scope="col">@DateTime.Now.Year YTD</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <th colspan="3" scope="col">Inflows</th>
+            @* <th scope="col">@(DateTime.Now.Year - 1)</th>
+            <th class="text-end" scope="col">@DateTime.Now.Year YTD</th> *@
+        </tr>
+        @foreach (KeyValuePair<string, decimal> item in Model.InflowsYtd)
+        {
+            <tr>
+                <td>@item.Key</td>
+                <td></td> 
+                <td class="text-end">@((item.Value).ToString("C0"))</td>
+            </tr>
+        }
+        <tr>
+            <th colspan="3" scope="col">Outflows</th>
+        </tr>
+        @foreach (KeyValuePair<string, decimal> item in Model.OutflowsYtd)
+        {
+            <tr>
+                <td>@item.Key</td>
+                <td></td>
+                <td class="text-end">@((item.Value).ToString("C0"))</td>
+            </tr>
+        }
+        <tr>
+            <td><b>NET CHANGE IN CASH</b></td>
+            <td></td>
+            <td class="text-end"><b>@((Model.InflowsYtd.Sum(i=>i.Value) - Model.OutflowsYtd.Sum(i=>i.Value)).ToString("C0"))</b></td>
+        </tr>
+    </tbody>
+</table>

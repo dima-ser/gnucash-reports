@@ -30,6 +30,7 @@ namespace GnuCashReports.Models
         public InvestmentSettings? InvestmentSettings { get; set; }
 
         public FISettings? FISettings { get; set; }
+        public string? ParentCashAccount {get; set; }
         }
 
     public class InvestmentSettings

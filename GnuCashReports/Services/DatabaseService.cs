@@ -644,6 +644,107 @@ WHERE full_path = @fullAccountPath";
                 }
             }
         }
+
+        public async Task<List<CashFlowItem>> GetCashFlowStatement(string parentCashAccountPath, DateTime startDate, DateTime endDate)
+        {
+            string parentCashAccountGuid = await GetAccountGuid(parentCashAccountPath);
+            List<CashFlowItem> cashFlows = new List<CashFlowItem>();
+            using (var connection = new SqliteConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+
+                var command = connection.CreateCommand();
+                command.Parameters.Add(new SqliteParameter("@parentCashAccountGuid", parentCashAccountGuid));
+                command.Parameters.Add(new SqliteParameter("@startDate", startDate));
+                command.Parameters.Add(new SqliteParameter("@endDate", endDate));
+                command.Parameters.Add(new SqliteParameter("@rootAccountName", _appSettings.RootAccountName));
+                command.CommandText = @"WITH RECURSIVE 
+  -- 1. Identify all GUIDs inside the Cash box (the parent and all its children)
+  cash_accounts AS (
+    SELECT guid FROM accounts WHERE guid = @parentCashAccountGuid
+    UNION ALL
+    SELECT a.guid FROM accounts a
+    JOIN cash_accounts ca ON a.parent_guid = ca.guid
+  ),
+
+  -- 2. Find the Root Account GUID dynamically by name, then seed its immediate children
+  all_account_paths AS (
+    SELECT 
+      guid, 
+      parent_guid, 
+      name, 
+      name AS full_path
+    FROM accounts 
+    WHERE parent_guid = (
+      SELECT guid 
+      FROM accounts 
+      WHERE name = @rootAccountName
+        AND (parent_guid IS NULL OR parent_guid = '')
+      LIMIT 1
+    )
+    
+    UNION ALL
+    
+    -- Recursive step: append child names using a colon
+    SELECT 
+      child.guid, 
+      child.parent_guid, 
+      child.name, 
+      parent.full_path || ':' || child.name
+    FROM accounts child
+    JOIN all_account_paths parent ON child.parent_guid = parent.guid
+  ),
+
+  -- 3. Find transactions that touch our cash accounts
+  transactions_touching_cash AS (
+    SELECT DISTINCT tx_guid 
+    FROM splits 
+    WHERE account_guid IN (SELECT guid FROM cash_accounts)
+  ),
+
+  -- 4. Get the counterparties and determine if individual splits are inflows or outflows
+  counter_splits AS (
+    SELECT 
+      s.account_guid,
+      CASE WHEN (CAST(s.value_num AS REAL) / s.value_denom) < 0 
+           THEN ABS(CAST(s.value_num AS REAL) / s.value_denom) ELSE 0 END AS inflow_amount,
+      CASE WHEN (CAST(s.value_num AS REAL) / s.value_denom) > 0 
+           THEN CAST(s.value_num AS REAL) / s.value_denom ELSE 0 END AS outflow_amount
+    FROM splits s
+    JOIN transactions tx ON s.tx_guid = tx.guid
+    WHERE s.tx_guid IN (SELECT tx_guid FROM transactions_touching_cash)
+      AND s.account_guid NOT IN (SELECT guid FROM cash_accounts)
+      AND tx.post_date >= @startDate
+      AND tx.post_date <= @endDate
+  )
+
+-- 5. Aggregate inflows and outflows by the pre-cleaned counterparty account path
+SELECT 
+  p.full_path AS AccountPath,
+  ROUND(SUM(cs.inflow_amount), 2) AS Inflow,
+  ROUND(SUM(cs.outflow_amount), 2) AS Outflow
+FROM counter_splits cs
+JOIN all_account_paths p ON cs.account_guid = p.guid
+GROUP BY p.full_path
+HAVING SUM(cs.inflow_amount) > 0 OR SUM(cs.outflow_amount) > 0
+ORDER BY p.full_path";
+
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    if (reader.HasRows)
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            cashFlows.Add(new CashFlowItem{ 
+                                AccountPath = reader.GetString(0), 
+                                Inflow = reader.GetDecimal(1), 
+                                Outflow = reader.GetDecimal(2) });
+                        }
+                    }
+                    return cashFlows;
+                }
+            }
+        }
     }
 
 }
