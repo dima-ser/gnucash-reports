@@ -4,6 +4,7 @@
     ViewData["Title"] = "Cash Flow";
 }
 @using GnuCashReports.Models
+@using GnuCashReports.Pages;
 
 <h1 class="text-center">Cash Flow</h1>
 
@@ -21,39 +22,39 @@
             @* <th scope="col">@(DateTime.Now.Year - 1)</th>
             <th class="text-end" scope="col">@DateTime.Now.Year YTD</th> *@
         </tr>
-        @foreach (KeyValuePair<string, decimal> item in Model.Inflows1)
+        @foreach (CashFlowCombinedItem item in Model.Inflows)
         {
             <tr>
-                <td>&nbsp;@item.Key</td>
-                <td></td> 
-                <td class="text-end">@((item.Value).ToString("C0"))</td>
+                <td>&nbsp;@item.Category</td>
+                <td>@item.Amount2.ToString("C0")</td> 
+                <td class="text-end">@item.Amount1.ToString("C0")</td>
             </tr>
         }
         <tr>
             <td><b>TOTAL INFLOWS</b></td>
-            <td></td>
-            <td class="text-end"><b>@((Model.Inflows1.Sum(i=>i.Value)).ToString("C0"))</b></td>
+            <td><b>@((Model.Inflows.Sum(i=>i.Amount2)).ToString("C0"))</b></td>
+            <td class="text-end"><b>@((Model.Inflows.Sum(i=>i.Amount1)).ToString("C0"))</b></td>
         </tr>
         <tr>
             <th colspan="3" scope="col">OUTFLOWS</th>
         </tr>
-        @foreach (KeyValuePair<string, decimal> item in Model.Outflows1)
+        @foreach (CashFlowCombinedItem item in Model.Outflows)
         {
             <tr>
-                <td>&nbsp;@item.Key</td>
-                <td></td>
-                <td class="text-end">@((item.Value).ToString("C0"))</td>
+                <td>&nbsp;@item.Category</td>
+                <td>@item.Amount2.ToString("C0")</td>
+                <td class="text-end">@item.Amount1.ToString("C0")</td>
             </tr>
         }
         <tr>
             <td><b>TOTAL OUTFLOWS</b></td>
-            <td></td>
-            <td class="text-end"><b>@((Model.Outflows1.Sum(i=>i.Value)).ToString("C0"))</b></td>
+            <td><b>@((Model.Outflows.Sum(i=>i.Amount2)).ToString("C0"))</b></td>
+            <td class="text-end"><b>@((Model.Outflows.Sum(i=>i.Amount1)).ToString("C0"))</b></td>
         </tr>
         <tr style="font-size:large">
             <td><b>NET CHANGE IN CASH</b></td>
-            <td></td>
-            <td class="text-end"><b>@((Model.Inflows1.Sum(i=>i.Value) - Model.Outflows1.Sum(i=>i.Value)).ToString("C0"))</b></td>
+            <td><b>@((Model.Inflows.Sum(i=>i.Amount2) - Model.Outflows.Sum(i=>i.Amount2)).ToString("C0"))</b></td>
+            <td class="text-end"><b>@((Model.Inflows.Sum(i=>i.Amount1) - Model.Outflows.Sum(i=>i.Amount1)).ToString("C0"))</b></td>
         </tr>
     </tbody>
 </table>
