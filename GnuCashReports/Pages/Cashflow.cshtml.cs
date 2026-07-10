@@ -105,7 +105,10 @@ namespace GnuCashReports.Pages
                     combinedItems.Add(combinedItem);
                 }
             }
-            return combinedItems;
+
+            return combinedItems
+                .OrderBy(item => item.Category, StringComparer.OrdinalIgnoreCase)
+                .ToList();
         }
 
         public Dictionary<string, decimal> RewriteCashflowCategories(
