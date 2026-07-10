@@ -30,9 +30,16 @@ namespace GnuCashReports.Models
         public InvestmentSettings? InvestmentSettings { get; set; }
 
         public FISettings? FISettings { get; set; }
-        public string? ParentCashAccount {get; set; }
-        }
 
+        public CashFlowSettings? CashFlowSettings {get; set;}
+        
+        }
+    public class CashFlowSettings
+    {
+        public string? ParentCashAccount {get; set; }
+        public Dictionary<string, List<string>>? InflowCategories { get; set; }
+        public Dictionary<string, List<string>>? OutflowCategories { get; set; }
+    }
     public class InvestmentSettings
     {
         public required List<string> InvestmentParentAccounts { get; set;}

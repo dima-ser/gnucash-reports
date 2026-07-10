@@ -9,6 +9,7 @@ builder.Services.AddRazorPages();
 
 builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
 
+
 builder.Services.AddSingleton<IValidateOptions<AppSettings>, AppSettingsValidation>();
 
 builder.Services.AddSingleton<DatabaseService>(serviceProvider =>

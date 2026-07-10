@@ -23,20 +23,56 @@ namespace GnuCashReports.Pages
 
         public async Task OnGetAsync()
         {
-            if (String.IsNullOrWhiteSpace(_appSettings.ParentCashAccount))
+            if (String.IsNullOrWhiteSpace(_appSettings.CashFlowSettings?.ParentCashAccount))
                 throw new Exception("Missing configuration \"ParentCashAccount\"");
             List<CashFlowItem> cashFlowItemsYtd  = await _dbService.GetCashFlowStatement(
-                _appSettings.ParentCashAccount, 
+                _appSettings.CashFlowSettings.ParentCashAccount, 
                 new DateTime(DateTime.Now.Year, 1, 1), 
                 new DateTime(DateTime.Now.Year + 1, 1, 1));
             
             foreach (var item in cashFlowItemsYtd.Where(c => c.Inflow > 0))
             {
-                InflowsYtd.Add(item.AccountPath, item.Inflow);
+                bool isOverridden = false;
+                if (_appSettings.CashFlowSettings.InflowCategories != null)
+                {
+                    foreach (var category in _appSettings.CashFlowSettings.InflowCategories)
+                    {
+                        foreach (var pattern in category.Value){
+                            if (item.AccountPath.StartsWith(pattern))
+                            {
+                                decimal total = InflowsYtd.ContainsKey(category.Key) ? InflowsYtd[category.Key] : 0;
+                                total += item.Inflow;
+                                InflowsYtd.Remove(category.Key);
+                                InflowsYtd.Add(category.Key, total);
+                                isOverridden = true;
+                            }
+                        }
+                    }
+                }
+                if (!isOverridden)
+                    InflowsYtd.Add(item.AccountPath, item.Inflow);
             }
             foreach (var item in cashFlowItemsYtd.Where(c => c.Outflow > 0))
             {
-                OutflowsYtd.Add(item.AccountPath, item.Outflow);
+                bool isOverridden = false;
+                if (_appSettings.CashFlowSettings.OutflowCategories != null)
+                {
+                    foreach (var category in _appSettings.CashFlowSettings.OutflowCategories)
+                    {
+                        foreach (var pattern in category.Value){
+                            if (item.AccountPath.StartsWith(pattern))
+                            {
+                                decimal total = OutflowsYtd.ContainsKey(category.Key) ? OutflowsYtd[category.Key] : 0;
+                                total += item.Outflow;
+                                OutflowsYtd.Remove(category.Key);
+                                OutflowsYtd.Add(category.Key, total);
+                                isOverridden = true;
+                            }
+                        }
+                    }
+                }
+                if (!isOverridden)
+                    OutflowsYtd.Add(item.AccountPath, item.Outflow);
             }
         }
     }
