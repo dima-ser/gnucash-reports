@@ -21,7 +21,7 @@
             @* <th scope="col">@(DateTime.Now.Year - 1)</th>
             <th class="text-end" scope="col">@DateTime.Now.Year YTD</th> *@
         </tr>
-        @foreach (KeyValuePair<string, decimal> item in Model.InflowsYtd)
+        @foreach (KeyValuePair<string, decimal> item in Model.Inflows1)
         {
             <tr>
                 <td>&nbsp;@item.Key</td>
@@ -32,12 +32,12 @@
         <tr>
             <td><b>TOTAL INFLOWS</b></td>
             <td></td>
-            <td class="text-end"><b>@((Model.InflowsYtd.Sum(i=>i.Value)).ToString("C0"))</b></td>
+            <td class="text-end"><b>@((Model.Inflows1.Sum(i=>i.Value)).ToString("C0"))</b></td>
         </tr>
         <tr>
             <th colspan="3" scope="col">OUTFLOWS</th>
         </tr>
-        @foreach (KeyValuePair<string, decimal> item in Model.OutflowsYtd)
+        @foreach (KeyValuePair<string, decimal> item in Model.Outflows1)
         {
             <tr>
                 <td>&nbsp;@item.Key</td>
@@ -48,12 +48,12 @@
         <tr>
             <td><b>TOTAL OUTFLOWS</b></td>
             <td></td>
-            <td class="text-end"><b>@((Model.OutflowsYtd.Sum(i=>i.Value)).ToString("C0"))</b></td>
+            <td class="text-end"><b>@((Model.Outflows1.Sum(i=>i.Value)).ToString("C0"))</b></td>
         </tr>
         <tr style="font-size:large">
             <td><b>NET CHANGE IN CASH</b></td>
             <td></td>
-            <td class="text-end"><b>@((Model.InflowsYtd.Sum(i=>i.Value) - Model.OutflowsYtd.Sum(i=>i.Value)).ToString("C0"))</b></td>
+            <td class="text-end"><b>@((Model.Inflows1.Sum(i=>i.Value) - Model.Outflows1.Sum(i=>i.Value)).ToString("C0"))</b></td>
         </tr>
     </tbody>
 </table>
