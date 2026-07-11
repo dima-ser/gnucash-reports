@@ -81,7 +81,7 @@ List account names (without the full path) you want to exclude from being counte
 ### RebalanceRelativePercentage
 This is the **relative** percentage each asset class can deviate from your target allocation before the report will tell you to rebalance (see https://www.bogleheads.org/wiki/Rebalancing). For example, set this to 20 if you want to rebalance any time an asset class deviates from target by 20% relative to its target. Only relative percentage is supported at this time. The report will also tell you how far off you are in absolute percentage as well as dollar amounts, so you can still use the report to see if you need to rebalance even if you use a different rebalancing strategy.
 
-## NetChangeInterval and NetChangeInterval2
+## NetChangeInterval, NetChangeInterval2
 This is a time interval to look back to determine the change in overall investment balance since the beginning of the interval. Only two intervals are supported at this time. This must be one of the following: "-[n] day(s)|month(s)|year(s)" or "start of day|month|year". For example: "-1 day", "-6 months", "start of year", etc. Note that this won't show your investments' rate of return, but the overall balance change, including contributions/withdrawals and investment growth/losses.
 
 ## TimeOfDayCutoff
@@ -96,3 +96,22 @@ List of colon-delimited full account paths that you want included into your "tot
 Percentage of your portfolio you intend to withdraw yearly once you're retired/financialy independent. The typical number for this is 0.04 (4%). This (in combination with `AverageExpensesYearsLookback`) is used to calculate how far along you are towards reaching the number when your annual expenses are 4% of your portfolio.
 ### AverageExpensesYearsLookback
 Number of years to look back to determine your average annual expenses. This (in combinatin with `SafeWithdrawalRate`) will be used to calculate how far along you are towards your FIRE number.
+
+## CashFlowSettings [optional]
+These are used for the Cash Flow report. Can be omitted if you don't use this report.
+
+### ParentCashAccount
+Set this to full account path of whatever account you consider "cash". All child accounts will be also included automatically. For example, if you have `Assets:Cash` and `Assets:Cash:Wallet`, `Assets:Cash:Checking`, set this to `Assets:Cash`. This determines what will show on the cash flow statement as cash inflows and outflows.
+
+### NumYearsAvailable
+Must be between 2 and 100. Number of past years (starting from current and going backwards) that are available in the dropdowns to compare cash flow reports for.
+
+### InflowCategories, OutflowCategories
+If these are omitted, the cash flow report will simply list all accounts that the money either flows into from/out of your cash accounts, similar to GnuCash's built-in Cash Flow report. This can be very verbose if you have many accounts. Use this to group your accounts and re-label them in a way that makes sense to you. For example, if you have cash inflows from `Assets:Investments:Brokerage` because you sold some investments, you can configure these transactions to show as `Sale of investments`:
+
+```json
+"InflowCategories" : {
+            "Sale of investments" : ["Assets:Investments"]
+}
+```
+The account path is matched with `StartsWith()` so all cash inflow transactions involving any accounts that are under `Assets:Investments` will be totaled up and included in the `Sale of investments` category and listed as one row on the report instead of separate rows for each account.
