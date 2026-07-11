@@ -40,7 +40,7 @@ namespace GnuCashReports.Pages
                 throw new Exception("Missing configuration \"CashFlowSettings\"");
             List<string> years = new List<string>();
             int currentYear = DateTime.Now.Year;
-            for (int i = 0; i < _appSettings.CashFlowSettings.NumYearsAvailable; i++)
+            for (int i = 0; i < _appSettings.NumYearsAvailable; i++)
             {
                 years.Add((currentYear-i).ToString());
             }

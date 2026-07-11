@@ -23,6 +23,7 @@ namespace GnuCashReports.Models
         public required string RootAccountName { get; set; }
         public string? ClosingEntriesPattern { get; set; }
         public decimal TargetSavingsPercentage { get; set; }
+        public int NumYearsAvailable {get; set; }
         public List<string>? ExcludedIncomeAccountsFromSavingRate { get; set; }
         public Dictionary<string, string>? ExpenseAccountEmojis { get; set; }
 
@@ -37,7 +38,6 @@ namespace GnuCashReports.Models
     public class CashFlowSettings
     {
         public string? ParentCashAccount {get; set; }
-        public int NumYearsAvailable {get; set; }
         public Dictionary<string, List<string>>? InflowCategories { get; set; }
         public Dictionary<string, List<string>>? OutflowCategories { get; set; }
     }
@@ -77,11 +77,12 @@ namespace GnuCashReports.Models
                 return ValidateOptionsResult.Fail("Missing configuration: RootAccountName");
             }
             if (settings.TargetSavingsPercentage < 0 || settings.TargetSavingsPercentage > 100)
-                return ValidateOptionsResult.Fail("TargetSavingsPercentage must be between 0 and 100");
-
+                return ValidateOptionsResult.Fail("Invalid configuration: TargetSavingsPercentage must be between 0 and 100");
+            if (settings.NumYearsAvailable < 2 || settings.NumYearsAvailable > 100)
+                    return ValidateOptionsResult.Fail("Invalid configuration: NumYearsAvailable must be between 2 and 100");
 
             if (settings.NetWorthYearsToDisplay < 1)
-                return ValidateOptionsResult.Fail("NetWorthYearsToDisplay must be positive");
+                return ValidateOptionsResult.Fail("Invalid configuration: NetWorthYearsToDisplay must be positive");
             if (settings.InvestmentSettings != null)
             {
 
@@ -103,10 +104,10 @@ namespace GnuCashReports.Models
                     return ValidateOptionsResult.Fail("Missing configuration: TargetAssetAllocation");
                 }
                 if (!settings.InvestmentSettings.TargetAssetAllocation.PercentagesAddUpTo100())
-                    return ValidateOptionsResult.Fail("TargetAssetAllocation: asset allocation percentages must up to 100");
+                    return ValidateOptionsResult.Fail("Invalid configuration: TargetAssetAllocation: asset allocation percentages must up to 100");
 
                 if (settings.InvestmentSettings.RebalanceRelativePercentage < 1 || settings.InvestmentSettings.RebalanceRelativePercentage > 100)
-                    return ValidateOptionsResult.Fail("RebalanceRelativePercentage must be between 1 and 100");
+                    return ValidateOptionsResult.Fail("Invalid configuration: RebalanceRelativePercentage must be between 1 and 100");
                 if (settings.InvestmentSettings.NetChangeInterval == null || settings.InvestmentSettings.NetChangeInterval2 == null)
                     return ValidateOptionsResult.Fail("Missing configuration: NetChangeInterval or NetChangeInterval2");
                 if (!AppSettings.SqliteModifierValidator.IsMatch(settings.InvestmentSettings.NetChangeInterval) || !AppSettings.SqliteModifierValidator.IsMatch(settings.InvestmentSettings.NetChangeInterval2))
@@ -120,16 +121,11 @@ namespace GnuCashReports.Models
                     return ValidateOptionsResult.Fail("Missing configuration: FISettings.LiquidAssetParentAccounts (at least 1 is required)");
                 }
                 if (settings.FISettings.SafeWithdrawalRate <= 0 || settings.FISettings.SafeWithdrawalRate >= 1)
-                    return ValidateOptionsResult.Fail("FISettings.SafeWithdrawalRate must be between 0 and 1");
+                    return ValidateOptionsResult.Fail("Invalid configuration: FISettings.SafeWithdrawalRate must be between 0 and 1");
                 if (settings.FISettings.AverageExpensesYearsLookback <= 0)
-                    return ValidateOptionsResult.Fail("FISettings.AverageExpensesYearsLookback must be positive");
+                    return ValidateOptionsResult.Fail("Invalid configuration: FISettings.AverageExpensesYearsLookback must be positive");
             }
 
-            if (settings.CashFlowSettings != null)
-            {
-                if (settings.CashFlowSettings.NumYearsAvailable < 2 || settings.CashFlowSettings.NumYearsAvailable > 100)
-                    return ValidateOptionsResult.Fail("CashFlowSettings.NumYearsAvailable must be between 2 and 100");
-            }
 
             return ValidateOptionsResult.Success;
         }
