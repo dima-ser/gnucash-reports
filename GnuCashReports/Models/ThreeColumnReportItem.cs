@@ -1,7 +1,8 @@
 namespace GnuCashReports.Models
 {
     /// <summary>
-    /// Represents a three-column report row consisting of a name and two decimal numbers
+    /// Represents a three-column report row consisting of a name and two decimal numbers. 
+    /// Two instances of ThreeColumnReportItem are considered equal if they have the same Name (case insensitive)
     /// </summary>
     public class ThreeColumnReportItem
     {
@@ -21,33 +22,34 @@ namespace GnuCashReports.Models
             Name?.GetHashCode(StringComparison.OrdinalIgnoreCase) ?? 0;
 
         /// <summary>
-        /// Combines two lists of items into one list of ThreeColumnReportItem, merging them based on the name
+        /// Combines two lists of items into one list of ThreeColumnReportItem, merging them based on the name. 
+        /// For items that only exist on one side, the other side's amount is set to zero.
         /// </summary>
-        /// <param name="items1"></param>
-        /// <param name="items2"></param>
+        /// <param name="itemsRight"></param>
+        /// <param name="itemsLeft"></param>
         /// <returns></returns>
-        public static List<ThreeColumnReportItem> CombineItems(Dictionary<string, decimal> items1, Dictionary<string, decimal> items2)
+        public static List<ThreeColumnReportItem> CombineItems(Dictionary<string, decimal> itemsLeft, Dictionary<string, decimal> itemsRight)
         {
             List<ThreeColumnReportItem> combinedItems = new List<ThreeColumnReportItem>();
-            foreach(var item1 in items1)
+            foreach(var rightItem in itemsRight)
             {
                 bool foundMatch = false;
-                foreach(var item2 in items2)
+                foreach(var leftItem in itemsLeft)
                 {
-                    if (item1.Key == item2.Key)
+                    if (rightItem.Key == leftItem.Key)
                     {
                         foundMatch = true;
-                        combinedItems.Add(new ThreeColumnReportItem{ Name = item1.Key, AmountRight = item1.Value, AmountLeft = item2.Value});
+                        combinedItems.Add(new ThreeColumnReportItem{ Name = rightItem.Key, AmountRight = rightItem.Value, AmountLeft = leftItem.Value});
                         break;
                     }
                 }
                 if (!foundMatch)
-                    combinedItems.Add(new ThreeColumnReportItem{ Name = item1.Key, AmountRight = item1.Value, AmountLeft = 0});
+                    combinedItems.Add(new ThreeColumnReportItem{ Name = rightItem.Key, AmountRight = rightItem.Value, AmountLeft = 0});
             }
-            // add remaining items from items2 that didn't have a match
-            foreach(var item2 in items2)
+            // add remaining items from itemsLeft that didn't have a match
+            foreach(var leftItem in itemsLeft)
             {
-                var combinedItem = new ThreeColumnReportItem { Name = item2.Key, AmountRight = 0, AmountLeft = item2.Value };
+                var combinedItem = new ThreeColumnReportItem { Name = leftItem.Key, AmountRight = 0, AmountLeft = leftItem.Value };
                 if (!combinedItems.Contains(combinedItem))
                 {
                     combinedItems.Add(combinedItem);

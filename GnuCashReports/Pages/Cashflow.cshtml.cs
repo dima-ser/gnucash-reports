@@ -19,11 +19,11 @@ namespace GnuCashReports.Pages
         public List<ThreeColumnReportItem> Inflows = new List<ThreeColumnReportItem>();
         public List<ThreeColumnReportItem> Outflows = new List<ThreeColumnReportItem>();
         [BindProperty (SupportsGet = true)]
-        public int Year {get; set;} = DateTime.Now.Year;
-        public SelectList YearList, CompareList;
+        public int YearRight {get; set;} = DateTime.Now.Year;
         [BindProperty (SupportsGet = true)]
-        public int CompareYear {get; set;} = DateTime.Now.Year - 1;
-
+        public int YearLeft {get; set;} = DateTime.Now.Year - 1;
+        public SelectList YearListRight, YearListLeft;
+        
         public decimal TotalInflowsYear1(){ return Inflows.Sum(i=>i.AmountRight);}
         public decimal TotalOutflowsYear1(){  return Outflows.Sum(i=>i.AmountRight);}
         public decimal TotalInflowsYear2(){ return Inflows.Sum(i=>i.AmountLeft); }
@@ -44,45 +44,45 @@ namespace GnuCashReports.Pages
             {
                 years.Add((currentYear-i).ToString());
             }
-            YearList = new SelectList(years, currentYear.ToString());
-            CompareList = new SelectList(years, (currentYear-1).ToString());
+            YearListRight = new SelectList(years, currentYear.ToString());
+            YearListLeft = new SelectList(years, (currentYear-1).ToString());
         }
 
         public async Task OnGetAsync()
         {
             if (String.IsNullOrWhiteSpace(_appSettings.CashFlowSettings?.ParentCashAccount))
                 throw new Exception("Missing configuration \"ParentCashAccount\"");
-            Dictionary<string, decimal> inflows1 = new Dictionary<string, decimal>();
-            Dictionary<string, decimal> outflows1 = new Dictionary<string, decimal>();
-            Dictionary<string, decimal> inflows2 = new Dictionary<string, decimal>();
-            Dictionary<string, decimal> outflows2 = new Dictionary<string, decimal>();
-            List<CashFlowItem> cashFlowItems1  = await _dbService.GetCashFlowStatement(
+            Dictionary<string, decimal> inflowsRight = new Dictionary<string, decimal>();
+            Dictionary<string, decimal> outflowsRight = new Dictionary<string, decimal>();
+            Dictionary<string, decimal> inflowsLeft = new Dictionary<string, decimal>();
+            Dictionary<string, decimal> outflowsLeft = new Dictionary<string, decimal>();
+            List<CashFlowItem> cashFlowItemsRight  = await _dbService.GetCashFlowStatement(
                 _appSettings.CashFlowSettings.ParentCashAccount, 
-                new DateTime(Year, 1, 1), 
-                new DateTime(Year + 1, 1, 1));
-            inflows1 = RewriteCashflowCategories(
-                cashFlowItems1.Where(c => c.Inflow > 0).ToList(), 
+                new DateTime(YearRight, 1, 1), 
+                new DateTime(YearRight + 1, 1, 1));
+            inflowsRight = RewriteCashflowCategories(
+                cashFlowItemsRight.Where(c => c.Inflow > 0).ToList(), 
                 _appSettings.CashFlowSettings.InflowCategories, 
                 CashFlowType.Inflow);
-            outflows1 = RewriteCashflowCategories(
-                cashFlowItems1.Where(c => c.Outflow > 0).ToList(), 
+            outflowsRight = RewriteCashflowCategories(
+                cashFlowItemsRight.Where(c => c.Outflow > 0).ToList(), 
                 _appSettings.CashFlowSettings.OutflowCategories, 
                 CashFlowType.Outflow);
-            List<CashFlowItem> cashFlowItems2  = await _dbService.GetCashFlowStatement(
+            List<CashFlowItem> cashFlowItemsLeft  = await _dbService.GetCashFlowStatement(
                 _appSettings.CashFlowSettings.ParentCashAccount, 
-                new DateTime(CompareYear, 1, 1), 
-                new DateTime(CompareYear + 1, 1, 1));
-            inflows2 = RewriteCashflowCategories(
-                cashFlowItems2.Where(c => c.Inflow > 0).ToList(), 
+                new DateTime(YearLeft, 1, 1), 
+                new DateTime(YearLeft + 1, 1, 1));
+            inflowsLeft = RewriteCashflowCategories(
+                cashFlowItemsLeft.Where(c => c.Inflow > 0).ToList(), 
                 _appSettings.CashFlowSettings.InflowCategories, 
                 CashFlowType.Inflow);
-            outflows2 = RewriteCashflowCategories(
-                cashFlowItems2.Where(c => c.Outflow > 0).ToList(), 
+            outflowsLeft = RewriteCashflowCategories(
+                cashFlowItemsLeft.Where(c => c.Outflow > 0).ToList(), 
                 _appSettings.CashFlowSettings.OutflowCategories, 
                 CashFlowType.Outflow);
 
-            Inflows = ThreeColumnReportItem.CombineItems(inflows1, inflows2);
-            Outflows = ThreeColumnReportItem.CombineItems(outflows1, outflows2);
+            Inflows = ThreeColumnReportItem.CombineItems(inflowsLeft, inflowsRight);
+            Outflows = ThreeColumnReportItem.CombineItems(outflowsLeft, outflowsRight);
 
         }
 

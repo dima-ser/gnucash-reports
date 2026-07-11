@@ -7,19 +7,22 @@
 
 <h1 style="text-align:center">Savings Rate</h1>
 
-
+<form method="get" class="d-inline">
 <div class="container mt-4">
   <div class="row">
     <div class="col-6">
-        <h2 style="text-align:center">@(DateTime.Now.Year - 1)</h2>
+        <p style="text-align:center"><select asp-for="YearLeft" asp-items="Model.YearListLeft" onchange="this.form.submit()"></select></p>
       <canvas id="chart"></canvas>
     </div>
     <div class="col-6">
-        <h2 style="text-align:center">@DateTime.Now.Year YTD</h2>
+        <p style="text-align:center"><select asp-for="YearRight" asp-items="Model.YearListRight" onchange="this.form.submit()"></select></p>
       <canvas id="chart2"></canvas>
     </div>
   </div>
 </div>
+</form>
+    
+
 
 @section Scripts {
 <script>
@@ -28,8 +31,8 @@
     const dangerColor = getComputedStyle(root).getPropertyValue('--bs-danger').trim();
 
     const labels = [ "Spent", "Saved"];
-    const data = [@Model.percentSpentPrevYear, @Model.percentSavedPrevYear];
-    const data2 = [@Model.percentSpentYTD, @Model.percentSavedYTD];
+    const data = [@Model.percentSpentLeftYear, @Model.percentSavedLeftYear];
+    const data2 = [@Model.percentSpentRightYear, @Model.percentSavedRightYear];
             const colors = [dangerColor, successColor];
 
     //const ctx = document.getElementById('plChart').getContext('2d');

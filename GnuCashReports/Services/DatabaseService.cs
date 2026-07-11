@@ -19,7 +19,7 @@
             _connectionString = _appSettings.GnuCashDbConnectionString;
         }
 
-        public async Task<List<ProfitLossItem>> GetLevel2ProfitLossAsync()
+        public async Task<List<ProfitLossItem>> GetLevel2ProfitLossAsync(DateTime startDate, DateTime endDate)
         {
             var results = new List<ProfitLossItem>();
 
@@ -28,13 +28,11 @@
                 await connection.OpenAsync();
 
                 var command = connection.CreateCommand();
-                command.Parameters.Add(new SqliteParameter("@ytdStart", new DateTime(DateTime.Now.Year, 1, 1)));
-                command.Parameters.Add(new SqliteParameter("@ytdEnd", new DateTime(DateTime.Now.Year + 1, 1, 1))); // include future-dated transaction until the end of current year
-                command.Parameters.Add(new SqliteParameter("@prevStart", new DateTime(DateTime.Now.Year - 1, 1, 1)));
-                command.Parameters.Add(new SqliteParameter("@prevEnd", new DateTime(DateTime.Now.Year, 1, 1)));
+                command.Parameters.Add(new SqliteParameter("@startDate", startDate));
+                command.Parameters.Add(new SqliteParameter("@endDate", endDate)); 
                 command.Parameters.Add(new SqliteParameter("@rootAccountName", _appSettings.RootAccountName));
-               command.Parameters.Add(new SqliteParameter("@ignorePattern", 
-               !String.IsNullOrWhiteSpace(_appSettings.ClosingEntriesPattern) ? _appSettings.ClosingEntriesPattern : DBNull.Value));
+                command.Parameters.Add(new SqliteParameter("@ignorePattern", 
+                !String.IsNullOrWhiteSpace(_appSettings.ClosingEntriesPattern) ? _appSettings.ClosingEntriesPattern : DBNull.Value));
                 command.CommandText = @"
             WITH RECURSIVE account_tree AS (
     SELECT a.guid, a.name, a.parent_guid, a.account_type,
@@ -51,33 +49,19 @@
     FROM accounts a
     JOIN account_tree at ON a.parent_guid = at.guid
 ),
-pl_level2_ytd AS (
+pl_level2 AS (
     SELECT at.level2_guid, at.level2_name AS account_name,
            at.account_type,
-           SUM(s.value_num * 1.0 / s.value_denom) AS total_amount
+           SUM(s.value_num * 1.0 / s.value_denom) AS amount
     FROM splits s
     JOIN transactions t ON s.tx_guid = t.guid
     JOIN account_tree at ON s.account_guid = at.guid
-    WHERE t.post_date BETWEEN @ytdStart AND @ytdEnd
-        AND ( @ignorePattern IS NULL OR description NOT LIKE @ignorePattern )
-    GROUP BY at.level2_guid, at.level2_name, at.account_type
-),
-pl_level2_prev_year AS (
-    SELECT at.level2_guid, at.level2_name AS account_name,
-           at.account_type,
-           SUM(s.value_num * 1.0 / s.value_denom) AS total_amount
-    FROM splits s
-    JOIN transactions t ON s.tx_guid = t.guid
-    JOIN account_tree at ON s.account_guid = at.guid
-    WHERE t.post_date BETWEEN @prevStart AND @prevEnd
+    WHERE t.post_date BETWEEN @startDate AND @endDate
         AND ( @ignorePattern IS NULL OR description NOT LIKE @ignorePattern )
     GROUP BY at.level2_guid, at.level2_name, at.account_type
 )
-SELECT ytd.account_type, ytd.account_name, ytd.total_amount as ytd_amount, prev.total_amount as prev_year_amount
-FROM pl_level2_ytd as ytd left JOIN pl_level2_prev_year as prev on ytd.level2_guid=prev.level2_guid
-union
-SELECT prev.account_type, prev.account_name, ytd.total_amount as ytd_amount, prev.total_amount as prev_year_amount
-FROM pl_level2_prev_year as prev left JOIN pl_level2_ytd as ytd on ytd.level2_guid=prev.level2_guid";
+SELECT account_type, account_name, amount
+FROM pl_level2";
 
                 using (var reader = await command.ExecuteReaderAsync())
                 {
@@ -89,8 +73,7 @@ FROM pl_level2_prev_year as prev left JOIN pl_level2_ytd as ytd on ytd.level2_gu
                             {
                                 AccountType = reader.GetString(0),
                                 AccountName = reader.GetString(1),
-                                TotalAmountYTD = reader[2] != DBNull.Value ? reader.GetDecimal(2) : 0,
-                                TotalAmountPrevYear = reader[3] != DBNull.Value ? reader.GetDecimal(3) : 0
+                                Amount = reader[2] != DBNull.Value ? reader.GetDecimal(2) : 0,
                             });
                             //Console.WriteLine(reader.GetString(1) + " " + reader.GetString(2));
                         }

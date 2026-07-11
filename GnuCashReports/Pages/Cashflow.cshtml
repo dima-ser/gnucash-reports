@@ -15,12 +15,12 @@
             <th scope="col"></th>
             <th scope="col">
                  
-                    <select asp-for="CompareYear" asp-items="Model.CompareList" onchange="this.form.submit()"></select>
+                    <select asp-for="YearLeft" asp-items="Model.YearListLeft" onchange="this.form.submit()"></select>
 
             </th>
             <th class="text-end" scope="col">
 
-                    <select asp-for="Year" asp-items="Model.YearList" onchange="this.form.submit()"></select>
+                    <select asp-for="YearRight" asp-items="Model.YearListRight" onchange="this.form.submit()"></select>
                 
             </th>
         </tr>

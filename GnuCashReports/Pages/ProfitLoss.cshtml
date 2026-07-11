@@ -8,45 +8,51 @@
 <h2 class="text-center">Profit & Loss</h2>
 
 <table class="table">
+    <form method="get" class="d-inline">
     <thead>
-        <tr>
+            <tr>
             <th scope="col"></th>
-            <th scope="col">@(DateTime.Now.Year - 1)</th>
-            <th class="text-end" scope="col">@DateTime.Now.Year YTD</th>
+            <th scope="col">
+                <select asp-for="YearLeft" asp-items="Model.YearListLeft" onchange="this.form.submit()"></select>
+            </th>
+            <th class="text-end" scope="col">
+                <select asp-for="YearRight" asp-items="Model.YearListRight" onchange="this.form.submit()"></select>
+            </th>
         </tr>
     </thead>
+    </form>
     <tbody>
         <tr>
             <td colspan="3"><b>INCOME</b></td>
         </tr>
-        @foreach (var item in Model.ProfitLossData.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_INCOME).OrderBy(i => i.AccountName))
+        @foreach (var item in Model.Income)
         {
             <tr>
-                <td>@item.AccountName</td>
-                <td>@((-item.TotalAmountPrevYear).ToString("C0"))</td>
-                <td class="text-end">@((-item.TotalAmountYTD).ToString("C0"))</td>
+                <td>@item.Name</td>
+                <td>@((-item.AmountLeft).ToString("C0"))</td>
+                <td class="text-end">@((-item.AmountRight).ToString("C0"))</td>
             </tr>
         }
         <tr>
             <td><b>TOTAL INCOME</b></td>
-            <td><b>@((-Model.ProfitLossData.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_INCOME).Sum(i => i.TotalAmountPrevYear)).ToString("C0"))</b></td>
-            <td class="text-end"><b>@((-Model.ProfitLossData.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_INCOME).Sum(i => i.TotalAmountYTD)).ToString("C0"))</b></td>
+            <td><b>@((-Model.Income.Sum(i => i.AmountLeft)).ToString("C0"))</b></td>
+            <td class="text-end"><b>@((-Model.Income.Sum(i => i.AmountRight)).ToString("C0"))</b></td>
         </tr>
         <tr>
             <td colspan="4"><b>EXPENSES</b></td>
         </tr>
-        @foreach (var item in Model.ProfitLossData.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_EXPENSE).OrderBy(i => i.AccountName))
+        @foreach (var item in Model.Expenses)
         {
             <tr>
-                <td>@item.AccountName</td>
-                <td>@item.TotalAmountPrevYear.ToString("C0")</td>
-                <td class="text-end">@item.TotalAmountYTD.ToString("C0")</td>
+                <td> <span style="vertical-align:2px">@(Model.ExpenseAccountEmojis != null && Model.ExpenseAccountEmojis.ContainsKey(item.Name) ? Model.ExpenseAccountEmojis[item.Name]+" " : "")</span>@item.Name</td>
+                <td>@item.AmountLeft.ToString("C0")</td>
+                <td class="text-end @((item.AmountRight / (decimal)(DateTime.Now.Month / 12.0) > item.AmountLeft) ? "text-danger" : "" )">@item.AmountRight.ToString("C0")</td>
             </tr>
         }
         <tr>
             <td><b>TOTAL EXPENSES</b></td>
-            <td><b>@Model.ProfitLossData.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_EXPENSE).Sum(i => i.TotalAmountPrevYear).ToString("C0")</b></td>
-            <td class="text-end"><b>@Model.ProfitLossData.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_EXPENSE).Sum(i => i.TotalAmountYTD).ToString("C0")</b></td>
+            <td><b>@Model.Expenses.Sum(i => i.AmountLeft).ToString("C0")</b></td>
+            <td class="text-end"><b>@Model.Expenses.Sum(i => i.AmountRight).ToString("C0")</b></td>
         </tr>
     </tbody>
 </table>
