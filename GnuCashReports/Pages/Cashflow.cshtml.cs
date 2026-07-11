@@ -34,6 +34,17 @@ namespace GnuCashReports.Pages
 
         public List<CashFlowCombinedItem> Inflows = new List<CashFlowCombinedItem>();
         public List<CashFlowCombinedItem> Outflows = new List<CashFlowCombinedItem>();
+        [BindProperty (SupportsGet = true)]
+        public int Year {get; set;} = DateTime.Now.Year;
+        [BindProperty (SupportsGet = true)]
+        public int CompareYear {get; set;} = DateTime.Now.Year - 1;
+
+        public decimal TotalInflowsYear1(){ return Inflows.Sum(i=>i.Amount1);}
+        public decimal TotalOutflowsYear1(){  return Outflows.Sum(i=>i.Amount1);}
+        public decimal TotalInflowsYear2(){ return Inflows.Sum(i=>i.Amount2); }
+        public decimal TotalOutflowsYear2(){ return Outflows.Sum(i=>i.Amount2); }
+        public decimal NetChangeYear1(){ return TotalInflowsYear1() - TotalOutflowsYear1(); }
+        public decimal NetChangeYear2(){ return TotalInflowsYear2() - TotalOutflowsYear2(); }
         public CashflowModel(DatabaseService dbService, IOptions<AppSettings> appSettings)
         {
             _dbService = dbService;
@@ -50,8 +61,8 @@ namespace GnuCashReports.Pages
             Dictionary<string, decimal> outflows2 = new Dictionary<string, decimal>();
             List<CashFlowItem> cashFlowItems1  = await _dbService.GetCashFlowStatement(
                 _appSettings.CashFlowSettings.ParentCashAccount, 
-                new DateTime(DateTime.Now.Year, 1, 1), 
-                new DateTime(DateTime.Now.Year + 1, 1, 1));
+                new DateTime(Year, 1, 1), 
+                new DateTime(Year + 1, 1, 1));
             inflows1 = RewriteCashflowCategories(
                 cashFlowItems1.Where(c => c.Inflow > 0).ToList(), 
                 _appSettings.CashFlowSettings.InflowCategories, 
@@ -62,8 +73,8 @@ namespace GnuCashReports.Pages
                 CashFlowType.Outflow);
             List<CashFlowItem> cashFlowItems2  = await _dbService.GetCashFlowStatement(
                 _appSettings.CashFlowSettings.ParentCashAccount, 
-                new DateTime(DateTime.Now.Year - 1, 1, 1), 
-                new DateTime(DateTime.Now.Year, 1, 1));
+                new DateTime(CompareYear, 1, 1), 
+                new DateTime(CompareYear + 1, 1, 1));
             inflows2 = RewriteCashflowCategories(
                 cashFlowItems2.Where(c => c.Inflow > 0).ToList(), 
                 _appSettings.CashFlowSettings.InflowCategories, 

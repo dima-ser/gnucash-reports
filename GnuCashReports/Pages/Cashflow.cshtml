@@ -12,8 +12,8 @@
     <thead>
         <tr>
             <th scope="col"></th>
-            <th scope="col">@(DateTime.Now.Year - 1)</th>
-            <th class="text-end" scope="col">@DateTime.Now.Year YTD</th>
+            <th scope="col">@Model.CompareYear</th>
+            <th class="text-end" scope="col">@Model.Year</th>
         </tr>
     </thead>
     <tbody>
@@ -23,15 +23,15 @@
         @foreach (CashFlowCombinedItem item in Model.Inflows)
         {
             <tr>
-                <td>&nbsp;@item.Category</td>
+                <td>@item.Category</td>
                 <td>@item.Amount2.ToString("C0")</td> 
                 <td class="text-end">@item.Amount1.ToString("C0")</td>
             </tr>
         }
         <tr>
             <td><b>TOTAL INFLOWS</b></td>
-            <td><b>@((Model.Inflows.Sum(i=>i.Amount2)).ToString("C0"))</b></td>
-            <td class="text-end"><b>@((Model.Inflows.Sum(i=>i.Amount1)).ToString("C0"))</b></td>
+            <td><b>@(Model.TotalInflowsYear2().ToString("C0"))</b></td>
+            <td class="text-end"><b>@(Model.TotalInflowsYear1().ToString("C0"))</b></td>
         </tr>
         <tr>
             <th colspan="3" scope="col">OUTFLOWS</th>
@@ -39,20 +39,20 @@
         @foreach (CashFlowCombinedItem item in Model.Outflows)
         {
             <tr>
-                <td>&nbsp;@item.Category</td>
+                <td>@item.Category</td>
                 <td>@item.Amount2.ToString("C0")</td>
                 <td class="text-end">@item.Amount1.ToString("C0")</td>
             </tr>
         }
         <tr>
             <td><b>TOTAL OUTFLOWS</b></td>
-            <td><b>@((Model.Outflows.Sum(i=>i.Amount2)).ToString("C0"))</b></td>
-            <td class="text-end"><b>@((Model.Outflows.Sum(i=>i.Amount1)).ToString("C0"))</b></td>
+            <td><b>@(Model.TotalOutflowsYear2().ToString("C0"))</b></td>
+            <td class="text-end"><b>@(Model.TotalOutflowsYear1().ToString("C0"))</b></td>
         </tr>
         <tr style="font-size:large">
             <td><b>NET CHANGE IN CASH</b></td>
-            <td><b>@((Model.Inflows.Sum(i=>i.Amount2) - Model.Outflows.Sum(i=>i.Amount2)).ToString("C0"))</b></td>
-            <td class="text-end"><b>@((Model.Inflows.Sum(i=>i.Amount1) - Model.Outflows.Sum(i=>i.Amount1)).ToString("C0"))</b></td>
+            <td @(Model.NetChangeYear2() < 0 ? Html.Raw("class=\"text-danger\""): Html.Raw("class=\"text-success\""))><b>@(Model.NetChangeYear2().ToString("C0"))</b></td>
+            <td class="text-end text-nowrap @(Model.NetChangeYear1() < 0 ? "text-danger" : "text-success")"><b>@(Model.NetChangeYear1().ToString("C0"))</b></td>
         </tr>
     </tbody>
 </table>
