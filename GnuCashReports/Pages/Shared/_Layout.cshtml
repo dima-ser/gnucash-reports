@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="en" data-bs-theme="light">
+<html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -11,6 +11,18 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="manifest" href="/site.webmanifest">
+    <script>
+        const htmlElement = document.documentElement;
+        
+        // Detect system preference
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        // Load saved theme or use system preference
+        const savedTheme = localStorage.getItem('theme');
+        const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
+
+        htmlElement.setAttribute('data-bs-theme', initialTheme);
+    </script>
 </head>
 <body>
 @*     <header>
@@ -50,21 +62,10 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/lib/Chart.js/chart.js"></script>
     <script>
-        const htmlElement = document.documentElement;
         const themeToggle = document.getElementById('themeToggle');
-
-        // Detect system preference
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-        // Load saved theme or use system preference
-        const savedTheme = localStorage.getItem('theme');
-        const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
-
-        htmlElement.setAttribute('data-bs-theme', initialTheme);
         if (themeToggle) {
             themeToggle.checked = initialTheme === 'dark';
         }
-
         // Toggle switch listener
         if (themeToggle) {
             themeToggle.addEventListener('change', function () {
