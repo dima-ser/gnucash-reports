@@ -9,13 +9,23 @@
 <h1 class="text-center">Cash Flow</h1>
 
 <table class="table">
+    <form method="get" class="d-inline">
     <thead>
         <tr>
             <th scope="col"></th>
-            <th scope="col">@Model.CompareYear</th>
-            <th class="text-end" scope="col">@Model.Year</th>
+            <th scope="col">
+                 
+                    <select asp-for="CompareYear" asp-items="Model.CompareList" onchange="this.form.submit()"></select>
+
+            </th>
+            <th class="text-end" scope="col">
+
+                    <select asp-for="Year" asp-items="Model.YearList" onchange="this.form.submit()"></select>
+                
+            </th>
         </tr>
     </thead>
+    </form>
     <tbody>
         <tr>
             <th colspan="3" scope="col">INFLOWS</th>

@@ -37,6 +37,7 @@ namespace GnuCashReports.Models
     public class CashFlowSettings
     {
         public string? ParentCashAccount {get; set; }
+        public int NumYearsAvailable {get; set; }
         public Dictionary<string, List<string>>? InflowCategories { get; set; }
         public Dictionary<string, List<string>>? OutflowCategories { get; set; }
     }
@@ -122,6 +123,12 @@ namespace GnuCashReports.Models
                     return ValidateOptionsResult.Fail("FISettings.SafeWithdrawalRate must be between 0 and 1");
                 if (settings.FISettings.AverageExpensesYearsLookback <= 0)
                     return ValidateOptionsResult.Fail("FISettings.AverageExpensesYearsLookback must be positive");
+            }
+
+            if (settings.CashFlowSettings != null)
+            {
+                if (settings.CashFlowSettings.NumYearsAvailable < 2 || settings.CashFlowSettings.NumYearsAvailable > 100)
+                    return ValidateOptionsResult.Fail("CashFlowSettings.NumYearsAvailable must be between 2 and 100");
             }
 
             return ValidateOptionsResult.Success;

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using GnuCashReports.Models;
 using GnuCashReports.Services;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace GnuCashReports.Pages
 {
@@ -36,6 +37,7 @@ namespace GnuCashReports.Pages
         public List<CashFlowCombinedItem> Outflows = new List<CashFlowCombinedItem>();
         [BindProperty (SupportsGet = true)]
         public int Year {get; set;} = DateTime.Now.Year;
+        public SelectList YearList, CompareList;
         [BindProperty (SupportsGet = true)]
         public int CompareYear {get; set;} = DateTime.Now.Year - 1;
 
@@ -45,10 +47,22 @@ namespace GnuCashReports.Pages
         public decimal TotalOutflowsYear2(){ return Outflows.Sum(i=>i.Amount2); }
         public decimal NetChangeYear1(){ return TotalInflowsYear1() - TotalOutflowsYear1(); }
         public decimal NetChangeYear2(){ return TotalInflowsYear2() - TotalOutflowsYear2(); }
+
+        
         public CashflowModel(DatabaseService dbService, IOptions<AppSettings> appSettings)
         {
             _dbService = dbService;
             _appSettings = appSettings.Value;
+            if (_appSettings.CashFlowSettings == null)
+                throw new Exception("Missing configuration \"CashFlowSettings\"");
+            List<string> years = new List<string>();
+            int currentYear = DateTime.Now.Year;
+            for (int i = 0; i < _appSettings.CashFlowSettings.NumYearsAvailable; i++)
+            {
+                years.Add((currentYear-i).ToString());
+            }
+            YearList = new SelectList(years, currentYear.ToString());
+            CompareList = new SelectList(years, (currentYear-1).ToString());
         }
 
         public async Task OnGetAsync()
