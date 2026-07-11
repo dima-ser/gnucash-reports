@@ -7,23 +7,6 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace GnuCashReports.Pages
 {
-    public class CashFlowCombinedItem
-    {
-        public string Category { get; set; } = String.Empty;
-        public decimal Amount1 { get; set; }
-        public decimal Amount2 { get; set; }
-
-        public bool Equals(CashFlowCombinedItem? other)
-        {
-            if (other is null) return false;
-            return string.Equals(Category, other.Category, StringComparison.OrdinalIgnoreCase);
-        }
-
-        public override bool Equals(object? obj) => Equals(obj as CashFlowCombinedItem);
-
-        public override int GetHashCode() =>
-            Category?.GetHashCode(StringComparison.OrdinalIgnoreCase) ?? 0;
-    }
 
     public class CashflowModel : PageModel
     {
@@ -33,18 +16,18 @@ namespace GnuCashReports.Pages
 
         private readonly AppSettings _appSettings;
 
-        public List<CashFlowCombinedItem> Inflows = new List<CashFlowCombinedItem>();
-        public List<CashFlowCombinedItem> Outflows = new List<CashFlowCombinedItem>();
+        public List<ThreeColumnReportItem> Inflows = new List<ThreeColumnReportItem>();
+        public List<ThreeColumnReportItem> Outflows = new List<ThreeColumnReportItem>();
         [BindProperty (SupportsGet = true)]
         public int Year {get; set;} = DateTime.Now.Year;
         public SelectList YearList, CompareList;
         [BindProperty (SupportsGet = true)]
         public int CompareYear {get; set;} = DateTime.Now.Year - 1;
 
-        public decimal TotalInflowsYear1(){ return Inflows.Sum(i=>i.Amount1);}
-        public decimal TotalOutflowsYear1(){  return Outflows.Sum(i=>i.Amount1);}
-        public decimal TotalInflowsYear2(){ return Inflows.Sum(i=>i.Amount2); }
-        public decimal TotalOutflowsYear2(){ return Outflows.Sum(i=>i.Amount2); }
+        public decimal TotalInflowsYear1(){ return Inflows.Sum(i=>i.AmountRight);}
+        public decimal TotalOutflowsYear1(){  return Outflows.Sum(i=>i.AmountRight);}
+        public decimal TotalInflowsYear2(){ return Inflows.Sum(i=>i.AmountLeft); }
+        public decimal TotalOutflowsYear2(){ return Outflows.Sum(i=>i.AmountLeft); }
         public decimal NetChangeYear1(){ return TotalInflowsYear1() - TotalOutflowsYear1(); }
         public decimal NetChangeYear2(){ return TotalInflowsYear2() - TotalOutflowsYear2(); }
 
@@ -98,43 +81,12 @@ namespace GnuCashReports.Pages
                 _appSettings.CashFlowSettings.OutflowCategories, 
                 CashFlowType.Outflow);
 
-            Inflows = CombineCashFlows(inflows1, inflows2);
-            Outflows = CombineCashFlows(outflows1, outflows2);
+            Inflows = ThreeColumnReportItem.CombineItems(inflows1, inflows2);
+            Outflows = ThreeColumnReportItem.CombineItems(outflows1, outflows2);
 
         }
 
-        public List<CashFlowCombinedItem> CombineCashFlows(Dictionary<string, decimal> cashFlows1, Dictionary<string, decimal> cashFlows2)
-        {
-            List<CashFlowCombinedItem> combinedItems = new List<CashFlowCombinedItem>();
-            foreach(var item1 in cashFlows1)
-            {
-                bool foundMatch = false;
-                foreach(var item2 in cashFlows2)
-                {
-                    if (item1.Key == item2.Key)
-                    {
-                        foundMatch = true;
-                        combinedItems.Add(new CashFlowCombinedItem{ Category = item1.Key, Amount1 = item1.Value, Amount2 = item2.Value});
-                        break;
-                    }
-                }
-                if (!foundMatch)
-                    combinedItems.Add(new CashFlowCombinedItem{ Category = item1.Key, Amount1 = item1.Value, Amount2 = 0});
-            }
-            // add remaining items from cashFlows2 that didn't have a match
-            foreach(var item2 in cashFlows2)
-            {
-                var combinedItem = new CashFlowCombinedItem { Category = item2.Key, Amount1 = 0, Amount2 = item2.Value };
-                if (!combinedItems.Contains(combinedItem))
-                {
-                    combinedItems.Add(combinedItem);
-                }
-            }
-
-            return combinedItems
-                .OrderBy(item => item.Category, StringComparer.OrdinalIgnoreCase)
-                .ToList();
-        }
+       
 
         public Dictionary<string, decimal> RewriteCashflowCategories(
             List<CashFlowItem> inputList, 
