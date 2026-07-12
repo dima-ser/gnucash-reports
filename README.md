@@ -39,7 +39,7 @@ If you are using GnuCash's "Close Book" feature, you'll need to specify your clo
 ## TargetSavingsPercentage [optional]
 This is used in the "Available to Spend" report to show amount available to spend this year based on your desired savings percentage rate. For example, set this to 50 if you're targeting to save 50% of you income. If not provided, it will default to 0.
 
-### NumYearsAvailable
+## NumYearsAvailable [required]
 Must be between 2 and 100. Number of years (starting from the current year and going backwards) that are available in the dropdowns used in certain reports for comparison.
 
 ## ExpenseAccountEmojis [optional]
