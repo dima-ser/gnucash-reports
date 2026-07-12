@@ -107,7 +107,7 @@ These are used for the Cash Flow report. Can be omitted if you don't use this re
 Set this to full account path of whatever account you consider "cash". All child accounts will be also included automatically. For example, if you have `Assets:Cash` and `Assets:Cash:Wallet`, `Assets:Cash:Checking`, set this to `Assets:Cash`. This determines what will show on the cash flow statement as cash inflows and outflows.
 
 ### InflowCategories, OutflowCategories
-If these are omitted, the cash flow report will simply list all accounts that the money either flows into from/out of your cash accounts, similar to GnuCash's built-in Cash Flow report. This can be very verbose if you have many accounts. Use this to group your accounts and re-label them in a way that makes sense to you. For example, if you have cash inflows from `Assets:Investments:Brokerage` because you sold some investments, you can configure these transactions to show as `Sale of investments`:
+If these are omitted, the cash flow report will simply list all accounts that the cash either flows into or out of, similar to GnuCash's built-in Cash Flow report. This can be very verbose if you have many accounts. Use this to group your accounts and re-label them in a way that makes sense to you. For example, if you have cash inflows from `Assets:Investments:Brokerage` because you sold some investments, you can configure these transactions to be summed up and shown as `Sale of investments`:
 
 ```json
 "InflowCategories" : {
