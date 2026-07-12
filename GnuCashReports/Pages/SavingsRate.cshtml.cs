@@ -39,7 +39,6 @@ namespace GnuCashReports.Pages
 
         public async Task OnGetAsync()
         {
-            //ProfitLossData = await _plService.GetLevel2ProfitLossAsync();
             List<ProfitLossItem> profitLossRight  = await _plService.GetLevel2ProfitLossAsync(
                 new DateTime(YearRight, 1, 1), new DateTime(YearRight + 1, 1, 1));
             List<ProfitLossItem> profitLossLeft  = await _plService.GetLevel2ProfitLossAsync(
@@ -48,7 +47,7 @@ namespace GnuCashReports.Pages
             List<string> exludedIncomeAccounts = _appSettings.ExcludedIncomeAccountsFromSavingRate ?? new List<string>();
 
             decimal spentLeftYear = profitLossLeft.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_EXPENSE).Sum(i => i.Amount);
-            decimal incomeLeftYear = -profitLossLeft.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_INCOME).Where(i => !exludedIncomeAccounts.Contains(i.AccountName)).Sum(i => i.Amount);
+            decimal incomeLeftYear = profitLossLeft.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_INCOME).Where(i => !exludedIncomeAccounts.Contains(i.AccountName)).Sum(i => i.Amount);
             if (incomeLeftYear != 0)
                 percentSpentLeftYear = Math.Round((spentLeftYear / incomeLeftYear) * 100, 1);
             else
@@ -56,7 +55,7 @@ namespace GnuCashReports.Pages
             percentSavedLeftYear = 100 - percentSpentLeftYear;
 
             decimal spentRightYear = profitLossRight.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_EXPENSE).Sum(i => i.Amount);
-            decimal incomeRightYear = -profitLossRight.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_INCOME).Where(i => !exludedIncomeAccounts.Contains(i.AccountName)).Sum(i => i.Amount);
+            decimal incomeRightYear = profitLossRight.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_INCOME).Where(i => !exludedIncomeAccounts.Contains(i.AccountName)).Sum(i => i.Amount);
             if (incomeRightYear > 0 )
                 percentSpentRightYear = Math.Round((spentRightYear / incomeRightYear) * 100, 1);
             else

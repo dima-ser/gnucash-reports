@@ -69,11 +69,15 @@ FROM pl_level2";
                     {
                         while (await reader.ReadAsync())
                         {
+                            decimal amount = reader[2] != DBNull.Value ? reader.GetDecimal(2) : 0;
+                            string accountType = reader.GetString(0);
+                            if (accountType == AppSettings.ACCOUNT_TYPE_INCOME)
+                                amount *= -1; // income amounts are credit/negative in db, so reverse the sign before returning
                             results.Add(new ProfitLossItem
                             {
-                                AccountType = reader.GetString(0),
+                                AccountType = accountType,
                                 AccountName = reader.GetString(1),
-                                Amount = reader[2] != DBNull.Value ? reader.GetDecimal(2) : 0,
+                                Amount = amount
                             });
                             //Console.WriteLine(reader.GetString(1) + " " + reader.GetString(2));
                         }

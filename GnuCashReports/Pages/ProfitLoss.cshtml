@@ -29,14 +29,14 @@
         {
             <tr>
                 <td>@item.Name</td>
-                <td>@((-item.AmountLeft).ToString("C0"))</td>
-                <td class="text-end">@((-item.AmountRight).ToString("C0"))</td>
+                <td>@((item.AmountLeft).ToString("C0"))</td>
+                <td class="text-end">@((item.AmountRight).ToString("C0"))</td>
             </tr>
         }
         <tr>
             <td><b>TOTAL INCOME</b></td>
-            <td><b>@((-Model.Income.Sum(i => i.AmountLeft)).ToString("C0"))</b></td>
-            <td class="text-end"><b>@((-Model.Income.Sum(i => i.AmountRight)).ToString("C0"))</b></td>
+            <td><b>@((Model.Income.Sum(i => i.AmountLeft)).ToString("C0"))</b></td>
+            <td class="text-end"><b>@((Model.Income.Sum(i => i.AmountRight)).ToString("C0"))</b></td>
         </tr>
         <tr>
             <td colspan="4"><b>EXPENSES</b></td>
@@ -53,6 +53,15 @@
             <td><b>TOTAL EXPENSES</b></td>
             <td><b>@Model.Expenses.Sum(i => i.AmountLeft).ToString("C0")</b></td>
             <td class="text-end"><b>@Model.Expenses.Sum(i => i.AmountRight).ToString("C0")</b></td>
+        </tr>
+        <tr>
+            <td colspan="3">
+            </td>
+        </tr>
+        <tr>
+            <td><b>NET PROFIT</b></td>
+            <td @(Model.NetProfitLeft > 0 ? Html.Raw("class=\"text-success\"") : Html.Raw("class=\"text-danger\""))><b>@((Model.NetProfitLeft.ToString("C0")))</b></td>
+            <td class="text-end @(Model.NetProfitRight > 0 ? "text-success" : "text-danger")"><b>@(Model.NetProfitRight.ToString("C0"))</b></td>
         </tr>
     </tbody>
 </table>

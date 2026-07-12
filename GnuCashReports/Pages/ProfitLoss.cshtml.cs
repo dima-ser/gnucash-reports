@@ -21,6 +21,7 @@ namespace GnuCashReports.Pages
         public int YearLeft {get; set;} = DateTime.Now.Year - 1;
         public SelectList YearListRight, YearListLeft;
         public Dictionary<string, string>? ExpenseAccountEmojis { get; set; }
+        public decimal NetProfitLeft, NetProfitRight;
         public ProfitLossModel(DatabaseService plService, IOptions<AppSettings> appSettings)
         {
             _plService = plService;
@@ -58,6 +59,9 @@ namespace GnuCashReports.Pages
                 .Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_EXPENSE)
                 .ToDictionary(i=>i.AccountName, i=>i.Amount);
             Expenses = ThreeColumnReportItem.CombineItems(expensesLeft, expensesRight);
+
+            NetProfitLeft = Income.Sum(i => i.AmountLeft) - Expenses.Sum(i => i.AmountLeft);
+            NetProfitRight = Income.Sum(i => i.AmountRight) - Expenses.Sum(i => i.AmountRight);
 
         }
     }
