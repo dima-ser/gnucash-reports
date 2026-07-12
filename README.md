@@ -39,6 +39,9 @@ If you are using GnuCash's "Close Book" feature, you'll need to specify your clo
 ## TargetSavingsPercentage [optional]
 This is used in the "Available to Spend" report to show amount available to spend this year based on your desired savings percentage rate. For example, set this to 50 if you're targeting to save 50% of you income. If not provided, it will default to 0.
 
+### NumYearsAvailable
+Must be between 2 and 100. Number of years (starting from the current year and going backwards) that are available in the dropdowns used in certain reports for comparison.
+
 ## ExpenseAccountEmojis [optional]
 These are used in your expense reports to make them easier to see at a glance and to shorten account names to better fit on the expense chart. Used in the expense report to prepend account names and in the expense chart instead of account names to save space. If omitted for a particular expense account, account name will be used instead. This section is optional.
 
@@ -102,9 +105,6 @@ These are used for the Cash Flow report. Can be omitted if you don't use this re
 
 ### ParentCashAccount
 Set this to full account path of whatever account you consider "cash". All child accounts will be also included automatically. For example, if you have `Assets:Cash` and `Assets:Cash:Wallet`, `Assets:Cash:Checking`, set this to `Assets:Cash`. This determines what will show on the cash flow statement as cash inflows and outflows.
-
-### NumYearsAvailable
-Must be between 2 and 100. Number of past years (starting from current and going backwards) that are available in the dropdowns to compare cash flow reports for.
 
 ### InflowCategories, OutflowCategories
 If these are omitted, the cash flow report will simply list all accounts that the money either flows into from/out of your cash accounts, similar to GnuCash's built-in Cash Flow report. This can be very verbose if you have many accounts. Use this to group your accounts and re-label them in a way that makes sense to you. For example, if you have cash inflows from `Assets:Investments:Brokerage` because you sold some investments, you can configure these transactions to show as `Sale of investments`:
