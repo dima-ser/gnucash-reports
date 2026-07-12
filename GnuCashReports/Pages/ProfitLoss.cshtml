@@ -46,7 +46,7 @@
             <tr>
                 <td> <span style="vertical-align:2px">@(Model.ExpenseAccountEmojis != null && Model.ExpenseAccountEmojis.ContainsKey(item.Name) ? Model.ExpenseAccountEmojis[item.Name]+" " : "")</span>@item.Name</td>
                 <td>@item.AmountLeft.ToString("C0")</td>
-                <td class="text-end @((item.AmountRight / (decimal)(DateTime.Now.Month / 12.0) > item.AmountLeft) ? "text-danger" : "" )">@item.AmountRight.ToString("C0")</td>
+                <td class="text-end @((item.AmountRight / (decimal)(DateTime.Now.Month / 12.0) > item.AmountLeft && Model.YearRight == DateTime.Now.Year && Model.YearLeft < Model.YearRight) ? "text-danger" : "" )">@item.AmountRight.ToString("C0")</td>
             </tr>
         }
         <tr>
