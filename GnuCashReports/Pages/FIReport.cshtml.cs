@@ -44,7 +44,7 @@ namespace GnuCashReports.Pages
             {
                 guids.Add(await _dbService.GetAccountGuid(accountName));
             }
-            LiquidAssetsData = await _dbService.GetBalanceSheetAsync(guids);
+            LiquidAssetsData = await _dbService.GetBalanceSheetAsync(guids, DateOnly.FromDateTime(DateTime.Now) );
             TotalLiquidAssets = LiquidAssetsData.Sum(item => item.Balance);
             AverageAnnualExpenses = await _dbService.GetAverageAnnualExpenses();
             SafeWithdrawalRate = _appSettings.FISettings.SafeWithdrawalRate;

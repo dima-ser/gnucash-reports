@@ -6,6 +6,7 @@
     using System;
     using System.Collections.Generic;
     using System.Text;
+    using System.Text.Json;
     using System.Threading.Tasks;
 
     public class DatabaseService
@@ -175,7 +176,7 @@ select sum(total_amount)/@numYears as AverageAnnualExpenses from pl_level2_ytd";
                         {
                             rootBalanceSheetAccountGuids.Add(reader.GetString(0));
                         }
-                        return await GetBalanceSheetAsync(rootBalanceSheetAccountGuids);
+                        return await GetBalanceSheetAsync(rootBalanceSheetAccountGuids, DateOnly.FromDateTime(DateTime.Now));
                     }
                     else
                         throw new Exception("No root accounts found for ASSET and LIABILITY. Please make sure the root account name is configured correctly"); 
@@ -189,7 +190,7 @@ select sum(total_amount)/@numYears as AverageAnnualExpenses from pl_level2_ytd";
         /// <param name="parentAccountGuids"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-        public async Task<List<BalanceSheetItem>> GetBalanceSheetAsync(List<string> parentAccountGuids)
+        public async Task<List<BalanceSheetItem>> GetBalanceSheetAsync(List<string> parentAccountGuids, DateOnly date)
         {
             if (parentAccountGuids == null || parentAccountGuids.Count == 0)
             {
@@ -202,15 +203,10 @@ select sum(total_amount)/@numYears as AverageAnnualExpenses from pl_level2_ytd";
                 await connection.OpenAsync();
 
                 var command = connection.CreateCommand();
-                string sqlInList = "";
-                for (int i = 0; i < parentAccountGuids.Count; i++)
-                {
-                    command.Parameters.Add(new SqliteParameter("@guid" + i, parentAccountGuids[i]));
-                    if (i < parentAccountGuids.Count - 1)
-                        sqlInList += "@guid" + i + ",";
-                    else
-                        sqlInList += "@guid" + i;
-                }
+                // Pass the list of parent GUIDs as a single JSON array parameter and expand it with json_each()
+                string parentGuidsJson = JsonSerializer.Serialize(parentAccountGuids);
+                command.Parameters.Add(new SqliteParameter("@parentGuidsJson", parentGuidsJson));
+                command.Parameters.Add(new SqliteParameter("@date", date));
                 command.CommandText = @"WITH RECURSIVE account_tree AS (
     -- Level 2 accounts (direct children of top-level)
     SELECT 
@@ -224,7 +220,7 @@ select sum(total_amount)/@numYears as AverageAnnualExpenses from pl_level2_ytd";
         a.name AS level2_name,
 		a.code AS level2_code
     FROM accounts a
-    WHERE a.parent_guid IN (" + sqlInList + @")
+    WHERE a.parent_guid IN (SELECT value FROM json_each(@parentGuidsJson))
 
     UNION ALL
 
@@ -245,6 +241,7 @@ select sum(total_amount)/@numYears as AverageAnnualExpenses from pl_level2_ytd";
 latest_prices AS (
     SELECT p.commodity_guid, MAX(p.date) AS latest_date
     FROM prices p
+    WHERE DATE(p.date) <= DATE(@date)  
     GROUP BY p.commodity_guid
 ),
 price_lookup AS (
@@ -271,7 +268,7 @@ balances AS (
     JOIN account_tree at ON s.account_guid = at.guid
     LEFT JOIN commodities c ON at.commodity_guid = c.guid
     LEFT JOIN price_lookup pl ON at.commodity_guid = pl.commodity_guid
-	where DATE(t.post_date) <= DATETIME('now', 'localtime')  
+	where DATE(t.post_date) <= DATE(@date)
     GROUP BY at.level2_guid, at.level2_name, at.account_type
     HAVING ABS(balance) > 0.0001
 )
