@@ -18,7 +18,12 @@
             _appSettings = appSettings;
             _connectionString = _appSettings.GnuCashDbConnectionString;
         }
-
+        /// <summary>
+        /// Returns profit&loss/income statement data for specified period. Both start and end dates are inclusive
+        /// </summary>
+        /// <param name="startDate">Include transactions posted on this date or later (inclusive)</param>
+        /// <param name="endDate">Include transactions posted on this date or before (inclusive)</param>
+        /// <returns></returns>
         public async Task<List<ProfitLossItem>> GetLevel2ProfitLossAsync(DateOnly startDate, DateOnly endDate)
         {
             var results = new List<ProfitLossItem>();
