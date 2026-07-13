@@ -317,10 +317,10 @@ ORDER BY general_account_type, account_code;";
             return balanceSheet.Sum(b=>b.Balance);
         }
 
-        public async Task<List<BalanceSheetItem>> GetInvestmentsAsync(List<string> investmentParentAccountGuids, string netChangeInterval, string netChangeInterval2, TimeSpan cutoffTime)
+        public async Task<List<InvestmentItem>> GetInvestmentsAsync(List<string> investmentParentAccountGuids, string netChangeInterval, string netChangeInterval2, TimeSpan cutoffTime)
         {
 
-            var results = new List<BalanceSheetItem>();
+            var results = new List<InvestmentItem>();
 
             using (var connection = new SqliteConnection(_connectionString))
             {
@@ -448,7 +448,7 @@ LEFT JOIN prev_balances2 p2 on b.guid=p2.guid";
                     {
                         while (await reader.ReadAsync())
                         {
-                            results.Add(new BalanceSheetItem
+                            results.Add(new InvestmentItem
                             {
                                 AccountType = reader.GetString(0),
                                 AccountName = reader.GetString(1),

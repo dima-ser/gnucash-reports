@@ -68,44 +68,44 @@ namespace GnuCashReports.Pages
             {
                 investmentParentGuids.Add(await _dbService.GetAccountGuid(accountName));
             }
-            List<BalanceSheetItem> balanceSheetData = await _dbService.GetInvestmentsAsync(investmentParentGuids,
+            List<InvestmentItem> investmentData = await _dbService.GetInvestmentsAsync(investmentParentGuids,
                 NetChangeInterval, NetChangeInterval2, _appSettings.InvestmentSettings!.TimeOfDayCutoff);
 
-            foreach (var balanceSheetItem in balanceSheetData)
+            foreach (var investmentItem in investmentData)
             {
-                if (InvestmentAssetAllocations.Where(i => i.Name == balanceSheetItem.AccountName).Count() > 0)
+                if (InvestmentAssetAllocations.Where(i => i.Name == investmentItem.AccountName).Count() > 0)
                 {
-                    var assetAllocationItem = new AssetAllocationItem(balanceSheetItem, InvestmentAssetAllocations.Where(i => i.Name == balanceSheetItem.AccountName).First());
+                    var assetAllocationItem = new AssetAllocationItem(investmentItem, InvestmentAssetAllocations.Where(i => i.Name == investmentItem.AccountName).First());
                     AssetAllocationData.Add(assetAllocationItem);
                 }
                 // we only need asset allocations for accounts with current balance over 0 as we don't track previous asset allocations
                 // also exclude accounts specified in the ExcludedAccounts configuration
-                else if (balanceSheetItem.Balance < AppSettings.SQLITE_FLOATING_POINT_MARGIN || (ExcludedAccounts != null && ExcludedAccounts.Contains(balanceSheetItem.AccountName)))
+                else if (investmentItem.Balance < AppSettings.SQLITE_FLOATING_POINT_MARGIN || (ExcludedAccounts != null && ExcludedAccounts.Contains(investmentItem.AccountName)))
                 {
-                    var assetAllocationItem = new AssetAllocationItem(balanceSheetItem, new AssetAllocation("Dummy", 0, 0, 0));
+                    var assetAllocationItem = new AssetAllocationItem(investmentItem, new AssetAllocation("Dummy", 0, 0, 0));
                     AssetAllocationData.Add(assetAllocationItem);
                 }
                 else
-                    throw new Exception("No asset allocation configuration found for \"" + balanceSheetItem.AccountName + "\". " +
+                    throw new Exception("No asset allocation configuration found for \"" + investmentItem.AccountName + "\". " +
                         "Add an asset allocation for this account under \"InvestmentAssetAllocations\" or add it to \"ExcludedAccounts\" to ignore it.");
             }
 
-            TargetAmountUS = AssetAllocationData.Sum(i => i.BalanceSheetItem.Balance) * (TargetAssetAllocation.US / 100);
-            TargetAmountIntnl = AssetAllocationData.Sum(i => i.BalanceSheetItem.Balance) * (TargetAssetAllocation.INTNL / 100);
-            TargetAmountBonds = AssetAllocationData.Sum(i => i.BalanceSheetItem.Balance) * (TargetAssetAllocation.BND / 100);
+            TargetAmountUS = AssetAllocationData.Sum(i => i.InvestmentItem.Balance) * (TargetAssetAllocation.US / 100);
+            TargetAmountIntnl = AssetAllocationData.Sum(i => i.InvestmentItem.Balance) * (TargetAssetAllocation.INTNL / 100);
+            TargetAmountBonds = AssetAllocationData.Sum(i => i.InvestmentItem.Balance) * (TargetAssetAllocation.BND / 100);
             ActualAmountUS = AssetAllocationData.Sum(i => i.USAmount);
             ActualAmountIntnl = AssetAllocationData.Sum(i => i.IntnlAmount);
             ActualAmountBonds = AssetAllocationData.Sum(i => i.BondAmount);
-            TotalAmount = AssetAllocationData.Sum(i => i.BalanceSheetItem.Balance);
+            TotalAmount = AssetAllocationData.Sum(i => i.InvestmentItem.Balance);
 
-            TotalPreviousAmount = AssetAllocationData.Sum(i => i.BalanceSheetItem.PreviousBalance);
+            TotalPreviousAmount = AssetAllocationData.Sum(i => i.InvestmentItem.PreviousBalance);
             NetChange = TotalAmount - TotalPreviousAmount;
             if (TotalPreviousAmount != 0)
                 NetPercentageChange = NetChange / TotalPreviousAmount;
             else
                 NetPercentageChange = Decimal.MaxValue;
 
-            TotalPreviousAmount2 = AssetAllocationData.Sum(i => i.BalanceSheetItem.PreviousBalance2);
+            TotalPreviousAmount2 = AssetAllocationData.Sum(i => i.InvestmentItem.PreviousBalance2);
             NetChange2 = TotalAmount - TotalPreviousAmount2;
             if (TotalPreviousAmount2 != 0)
                 NetPercentageChange2 = NetChange2 / TotalPreviousAmount2;

@@ -2,12 +2,12 @@
 {
     public class AssetAllocationItem
     {
-        public BalanceSheetItem BalanceSheetItem  { get; set; }
+        public InvestmentItem InvestmentItem  { get; set; }
         private AssetAllocation _assetAllocation { get; set; }
 
-        public AssetAllocationItem(BalanceSheetItem balanceSheetItem, AssetAllocation assetAllocation)
+        public AssetAllocationItem(InvestmentItem investmentItem, AssetAllocation assetAllocation)
         {
-            BalanceSheetItem = balanceSheetItem;
+            InvestmentItem = investmentItem;
             _assetAllocation = assetAllocation;
         }
 
@@ -15,21 +15,21 @@
         {
             get
             {
-                return BalanceSheetItem.Balance * (_assetAllocation.US / 100);
+                return InvestmentItem.Balance * (_assetAllocation.US / 100);
             }
         }
         public decimal IntnlAmount
         {
             get
             {
-                return BalanceSheetItem.Balance * (_assetAllocation.INTNL / 100);
+                return InvestmentItem.Balance * (_assetAllocation.INTNL / 100);
             }
         }
         public decimal BondAmount
         {
             get
             {
-                return BalanceSheetItem.Balance * (_assetAllocation.BND / 100);
+                return InvestmentItem.Balance * (_assetAllocation.BND / 100);
             }
         }
     }
