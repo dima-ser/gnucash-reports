@@ -26,8 +26,8 @@ namespace GnuCashReports.Pages
         public async Task OnGetAsync()
         {
             ProfitLossData = await _plService.GetLevel2ProfitLossAsync(
-                new DateTime(DateTime.Now.Year, 1, 1),
-                new DateTime(DateTime.Now.Year+1, 1, 1));
+                new DateOnly(DateTime.Now.Year, 1, 1),
+                new DateOnly(DateTime.Now.Year, 12, 31));
             budgetSavingsRatePercentage = _appSettings.TargetSavingsPercentage;
             List<string> exludedIncomeAccounts = _appSettings.ExcludedIncomeAccountsFromSavingRate ?? new List<string>();
 

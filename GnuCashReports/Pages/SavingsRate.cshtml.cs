@@ -40,9 +40,9 @@ namespace GnuCashReports.Pages
         public async Task OnGetAsync()
         {
             List<ProfitLossItem> profitLossRight  = await _plService.GetLevel2ProfitLossAsync(
-                new DateTime(YearRight, 1, 1), new DateTime(YearRight + 1, 1, 1));
+                new DateOnly(YearRight, 1, 1), new DateOnly(YearRight, 12, 31));
             List<ProfitLossItem> profitLossLeft  = await _plService.GetLevel2ProfitLossAsync(
-                new DateTime(YearLeft, 1, 1), new DateTime(YearLeft + 1, 1, 1));
+                new DateOnly(YearLeft, 1, 1), new DateOnly(YearLeft, 12, 31));
 
             List<string> exludedIncomeAccounts = _appSettings.ExcludedIncomeAccountsFromSavingRate ?? new List<string>();
 

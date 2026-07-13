@@ -19,7 +19,7 @@
             _connectionString = _appSettings.GnuCashDbConnectionString;
         }
 
-        public async Task<List<ProfitLossItem>> GetLevel2ProfitLossAsync(DateTime startDate, DateTime endDate)
+        public async Task<List<ProfitLossItem>> GetLevel2ProfitLossAsync(DateOnly startDate, DateOnly endDate)
         {
             var results = new List<ProfitLossItem>();
 
@@ -56,7 +56,7 @@ pl_level2 AS (
     FROM splits s
     JOIN transactions t ON s.tx_guid = t.guid
     JOIN account_tree at ON s.account_guid = at.guid
-    WHERE t.post_date BETWEEN @startDate AND @endDate
+    WHERE DATE(t.post_date) >= DATE(@startDate) AND DATE(t.post_date) <= DATE(@endDate)
         AND ( @ignorePattern IS NULL OR description NOT LIKE @ignorePattern )
     GROUP BY at.level2_guid, at.level2_name, at.account_type
 )
