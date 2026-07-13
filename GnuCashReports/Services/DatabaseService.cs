@@ -155,10 +155,19 @@ select sum(total_amount)/@numYears as AverageAnnualExpenses from pl_level2_ytd";
             }
         }
 
-        
+        /// <summary>
+        /// Returns the balance sheet for root balance sheet accounts as of current date
+        /// </summary>
         public async Task<List<BalanceSheetItem>> GetBalanceSheetAsync()
         {
-            //var results = new List<BalanceSheetItem>();
+            return await GetBalanceSheetAsync(await GetRootBalanceSheetAccountGuids(), DateOnly.FromDateTime(DateTime.Now));
+        }
+
+        /// <summary>
+        /// Returns guids of root ASSET and LIABILITY accounts (direct descendents of the root account)
+        /// </summary>
+        public async Task<List<string>> GetRootBalanceSheetAccountGuids()
+        {
             List<string> rootBalanceSheetAccountGuids = new List<string>();
             using (var connection = new SqliteConnection(_connectionString))
             {
@@ -176,16 +185,17 @@ select sum(total_amount)/@numYears as AverageAnnualExpenses from pl_level2_ytd";
                         {
                             rootBalanceSheetAccountGuids.Add(reader.GetString(0));
                         }
-                        return await GetBalanceSheetAsync(rootBalanceSheetAccountGuids, DateOnly.FromDateTime(DateTime.Now));
+                        return rootBalanceSheetAccountGuids;
                     }
                     else
                         throw new Exception("No root accounts found for ASSET and LIABILITY. Please make sure the root account name is configured correctly"); 
                 }
             }
         }
+
         
         /// <summary>
-        /// Returns a balance sheet for specified list of account Guids as of specified date
+        /// Returns a balance sheet for specified list of account Guids as of specified date. Uses the last prices up through the report date
         /// </summary>
         /// <param name="parentAccountGuids">Guids of accounts to list balances for</param>
         /// <param name="date">Date (inclusive) as of which to return the balance sheet for</param>
@@ -298,95 +308,12 @@ ORDER BY general_account_type, account_code;";
         /// <summary>
         /// Returns net worth as of specified date (inclusive)
         /// </summary>
-        /// <param name="date">Date to return net worth for. Date is inclusive, meaning transactions and prices as of this date are included in teh net worth</param>
+        /// <param name="date">Date to return net worth for. Date is inclusive, meaning transactions and prices as of this date are included in the net worth</param>
         /// <returns></returns>
         public async Task<decimal> GetNetWorthAsync(DateOnly date)
         {
-            using (var connection = new SqliteConnection(_connectionString))
-            {
-                await connection.OpenAsync();
-
-                var command = connection.CreateCommand();
-                command.Parameters.Add(new SqliteParameter("@rootAccountName", _appSettings.RootAccountName));
-                DateOnly priceDate = date.AddDays(1); // to make the prices reflect end of day price
-                command.Parameters.Add(new SqliteParameter("@transDate", date));
-                command.Parameters.Add(new SqliteParameter("@priceDate", priceDate));
-                command.CommandText = @"WITH RECURSIVE account_tree AS (
-    -- Root accounts
-    SELECT 
-        a.guid,
-        a.name,
-        a.account_type,
-        a.parent_guid,
-        a.commodity_guid,
-        a.commodity_scu,
-        a.guid AS level2_guid,
-        a.name AS level2_name,
-		a.code AS level2_code
-    FROM accounts a
-    WHERE a.guid IN (
-		(select guid from accounts where account_type='ASSET' and parent_guid=(select guid from accounts where account_type='ROOT' and name=@rootAccountName)),
-		(select guid from accounts where account_type='LIABILITY' and parent_guid=(select guid from accounts where account_type='ROOT' and name=@rootAccountName))
-		)
-    UNION ALL
-
-    -- Descendants of root accounts
-    SELECT 
-        a.guid,
-        a.name,
-        a.account_type,
-        a.parent_guid,
-        a.commodity_guid,
-        a.commodity_scu,
-        at.level2_guid,
-        at.level2_name,
-		at.level2_code
-    FROM accounts a
-    JOIN account_tree at ON a.parent_guid = at.guid
-),
-latest_prices AS (
-    SELECT p.commodity_guid, MAX(p.date) AS latest_date
-    FROM prices p
-	WHERE p.date < DATETIME(@priceDate)  
-    GROUP BY p.commodity_guid
-),
-price_lookup AS (
-    SELECT p.commodity_guid,
-           p.value_num * 1.0 / p.value_denom AS price
-    FROM prices p
-    JOIN latest_prices lp ON p.commodity_guid = lp.commodity_guid AND p.date = lp.latest_date
-),
-balances AS (
-    SELECT 
-        at.level2_name AS account_name,
-        at.account_type,
-		at.level2_code AS account_code,
-        SUM(
-            CASE 
-                WHEN at.account_type in ('MUTUAL', 'STOCK') and c.namespace != 'CURRENCY' THEN
-                    s.quantity_num * 1.0 / s.quantity_denom * IFNULL(pl.price, 0)
-                ELSE
-                    s.value_num * 1.0 / s.value_denom
-            END
-        ) AS balance
-    FROM splits s
-    JOIN transactions t ON s.tx_guid = t.guid
-    JOIN account_tree at ON s.account_guid = at.guid
-    LEFT JOIN commodities c ON at.commodity_guid = c.guid
-    LEFT JOIN price_lookup pl ON at.commodity_guid = pl.commodity_guid
-	where DATE(t.post_date) < DATETIME(@transDate)
-    GROUP BY at.level2_guid, at.level2_name, at.account_type
-    HAVING ABS(balance) > 0.0001
-)
-SELECT sum(balance) as networth
-FROM balances";
-
-                using (var reader = await command.ExecuteReaderAsync())
-                {
-                    await reader.ReadAsync();
-                    return reader.GetDecimal(0);
-                }
-            }
+            List<BalanceSheetItem> balanceSheet = await GetBalanceSheetAsync(await GetRootBalanceSheetAccountGuids(), date);
+            return balanceSheet.Sum(b=>b.Balance);
         }
 
         public async Task<List<BalanceSheetItem>> GetInvestmentsAsync(List<string> investmentParentAccountGuids, string netChangeInterval, string netChangeInterval2, TimeSpan cutoffTime)
