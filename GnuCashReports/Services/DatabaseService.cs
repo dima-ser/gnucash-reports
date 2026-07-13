@@ -209,7 +209,6 @@ select sum(total_amount)/@numYears as AverageAnnualExpenses from pl_level2_ytd";
                 command.Parameters.Add(new SqliteParameter("@parentGuidsJson", parentGuidsJson));
                 command.Parameters.Add(new SqliteParameter("@date", date));
                 command.CommandText = @"WITH RECURSIVE account_tree AS (
-    -- Level 2 accounts (direct children of top-level)
     SELECT 
         a.guid,
         a.name,
@@ -225,7 +224,6 @@ select sum(total_amount)/@numYears as AverageAnnualExpenses from pl_level2_ytd";
 
     UNION ALL
 
-    -- Descendants of level 2 accounts
     SELECT 
         a.guid,
         a.name,
