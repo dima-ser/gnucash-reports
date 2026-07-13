@@ -39,9 +39,9 @@ namespace GnuCashReports.Pages
 
         public async Task OnGetAsync()
         {
-            List<ProfitLossItem> profitLossRight  = await _plService.GetLevel2ProfitLossAsync(
+            List<ReportItem> profitLossRight  = await _plService.GetLevel2ProfitLossAsync(
                 new DateOnly(YearRight, 1, 1), new DateOnly(YearRight, 12, 31));
-            List<ProfitLossItem> profitLossLeft  = await _plService.GetLevel2ProfitLossAsync(
+            List<ReportItem> profitLossLeft  = await _plService.GetLevel2ProfitLossAsync(
                 new DateOnly(YearLeft, 1, 1), new DateOnly(YearLeft, 12, 31));
 
             Dictionary<string, decimal> incomeRight = profitLossRight

@@ -80,7 +80,7 @@ namespace GnuCashReports.Pages
                 }
                 // we only need asset allocations for accounts with current balance over 0 as we don't track previous asset allocations
                 // also exclude accounts specified in the ExcludedAccounts configuration
-                else if (investmentItem.Balance < AppSettings.SQLITE_FLOATING_POINT_MARGIN || (ExcludedAccounts != null && ExcludedAccounts.Contains(investmentItem.AccountName)))
+                else if (investmentItem.Amount < AppSettings.SQLITE_FLOATING_POINT_MARGIN || (ExcludedAccounts != null && ExcludedAccounts.Contains(investmentItem.AccountName)))
                 {
                     var assetAllocationItem = new AssetAllocationItem(investmentItem, new AssetAllocation("Dummy", 0, 0, 0));
                     AssetAllocationData.Add(assetAllocationItem);
@@ -90,13 +90,13 @@ namespace GnuCashReports.Pages
                         "Add an asset allocation for this account under \"InvestmentAssetAllocations\" or add it to \"ExcludedAccounts\" to ignore it.");
             }
 
-            TargetAmountUS = AssetAllocationData.Sum(i => i.InvestmentItem.Balance) * (TargetAssetAllocation.US / 100);
-            TargetAmountIntnl = AssetAllocationData.Sum(i => i.InvestmentItem.Balance) * (TargetAssetAllocation.INTNL / 100);
-            TargetAmountBonds = AssetAllocationData.Sum(i => i.InvestmentItem.Balance) * (TargetAssetAllocation.BND / 100);
+            TargetAmountUS = AssetAllocationData.Sum(i => i.InvestmentItem.Amount) * (TargetAssetAllocation.US / 100);
+            TargetAmountIntnl = AssetAllocationData.Sum(i => i.InvestmentItem.Amount) * (TargetAssetAllocation.INTNL / 100);
+            TargetAmountBonds = AssetAllocationData.Sum(i => i.InvestmentItem.Amount) * (TargetAssetAllocation.BND / 100);
             ActualAmountUS = AssetAllocationData.Sum(i => i.USAmount);
             ActualAmountIntnl = AssetAllocationData.Sum(i => i.IntnlAmount);
             ActualAmountBonds = AssetAllocationData.Sum(i => i.BondAmount);
-            TotalAmount = AssetAllocationData.Sum(i => i.InvestmentItem.Balance);
+            TotalAmount = AssetAllocationData.Sum(i => i.InvestmentItem.Amount);
 
             TotalPreviousAmount = AssetAllocationData.Sum(i => i.InvestmentItem.PreviousBalance);
             NetChange = TotalAmount - TotalPreviousAmount;

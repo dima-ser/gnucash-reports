@@ -23,12 +23,12 @@
         {
             <tr>
                 <td>&nbsp;@item.AccountName</td>
-                <td class="text-end">@((item.Balance).ToString("C0"))</td>
+                <td class="text-end">@((item.Amount).ToString("C0"))</td>
             </tr>
         }
         <tr>
             <td><b>TOTAL ASSETS</b></td>
-            <td class="text-end"><b>@((Model.BalanceSheetData.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_ASSET).Sum(i => i.Balance)).ToString("C0"))</b></td>
+            <td class="text-end"><b>@((Model.BalanceSheetData.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_ASSET).Sum(i => i.Amount)).ToString("C0"))</b></td>
         </tr>
         <tr>
             <td colspan="2"></td>
@@ -40,20 +40,20 @@
         {
             <tr>
                 <td>&nbsp;@item.AccountName</td>
-                <td class="text-end">@item.Balance.ToString("C0")</td>
+                <td class="text-end">@item.Amount.ToString("C0")</td>
             </tr>
         }
         <tr>
             <td><b>TOTAL LIABILITIES</b></td>
-            <td class="text-end"><b>@Model.BalanceSheetData.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_LIABILITY).Sum(i => i.Balance).ToString("C0")</b></td>
+            <td class="text-end"><b>@Model.BalanceSheetData.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_LIABILITY).Sum(i => i.Amount).ToString("C0")</b></td>
         </tr>
         <tr>
             <td colspan="2"></td>
         </tr>
         <tr style="font-size:large">
             <td><b>NET WORTH</b></td>
-            <td class="text-end"><b>@((Model.BalanceSheetData.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_ASSET).Sum(i => i.Balance) +
-                                        Model.BalanceSheetData.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_LIABILITY).Sum(i => i.Balance)).ToString("C0"))
+            <td class="text-end"><b>@((Model.BalanceSheetData.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_ASSET).Sum(i => i.Amount) +
+                                        Model.BalanceSheetData.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_LIABILITY).Sum(i => i.Amount)).ToString("C0"))
                 </b>
             </td>
         </tr>

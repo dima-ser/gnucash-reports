@@ -12,7 +12,7 @@ namespace GnuCashReports.Pages
     {
         private readonly DatabaseService _plService;
         private readonly AppSettings _appSettings;
-        public List<ProfitLossItem> ProfitLossData { get; set; } = new();
+        public List<ReportItem> ProfitLossData { get; set; } = new();
         public decimal availableToSpendThisYear;
         public decimal budgetSavingsRatePercentage;
 

@@ -15,21 +15,21 @@
         {
             get
             {
-                return InvestmentItem.Balance * (_assetAllocation.US / 100);
+                return InvestmentItem.Amount * (_assetAllocation.US / 100);
             }
         }
         public decimal IntnlAmount
         {
             get
             {
-                return InvestmentItem.Balance * (_assetAllocation.INTNL / 100);
+                return InvestmentItem.Amount * (_assetAllocation.INTNL / 100);
             }
         }
         public decimal BondAmount
         {
             get
             {
-                return InvestmentItem.Balance * (_assetAllocation.BND / 100);
+                return InvestmentItem.Amount * (_assetAllocation.BND / 100);
             }
         }
     }

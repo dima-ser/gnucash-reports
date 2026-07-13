@@ -12,7 +12,7 @@ namespace GnuCashReports.Pages
         private readonly DatabaseService _dbService;
         private readonly AppSettings _appSettings;
 
-        public List<BalanceSheetItem> BalanceSheetData { get; set; } = new();
+        public List<ReportItem> BalanceSheetData { get; set; } = new();
 
         public BalanceSheetModel(DatabaseService dbService, IOptions<AppSettings> appSettings)
         {

@@ -25,9 +25,9 @@
         /// <param name="startDate">Include transactions posted on this date or later (inclusive)</param>
         /// <param name="endDate">Include transactions posted on this date or before (inclusive)</param>
         /// <returns></returns>
-        public async Task<List<ProfitLossItem>> GetLevel2ProfitLossAsync(DateOnly startDate, DateOnly endDate)
+        public async Task<List<ReportItem>> GetLevel2ProfitLossAsync(DateOnly startDate, DateOnly endDate)
         {
-            var results = new List<ProfitLossItem>();
+            var results = new List<ReportItem>();
 
             using (var connection = new SqliteConnection(_connectionString))
             {
@@ -79,7 +79,7 @@ FROM pl_level2";
                             string accountType = reader.GetString(0);
                             if (accountType == AppSettings.ACCOUNT_TYPE_INCOME)
                                 amount *= -1; // income amounts are credit/negative in db, so reverse the sign before returning
-                            results.Add(new ProfitLossItem
+                            results.Add(new ReportItem
                             {
                                 AccountType = accountType,
                                 AccountName = reader.GetString(1),
@@ -158,7 +158,7 @@ select sum(total_amount)/@numYears as AverageAnnualExpenses from pl_level2_ytd";
         /// <summary>
         /// Returns the balance sheet for root balance sheet accounts as of current date
         /// </summary>
-        public async Task<List<BalanceSheetItem>> GetBalanceSheetAsync()
+        public async Task<List<ReportItem>> GetBalanceSheetAsync()
         {
             return await GetBalanceSheetAsync(await GetRootBalanceSheetAccountGuids(), DateOnly.FromDateTime(DateTime.Now));
         }
@@ -202,13 +202,13 @@ select sum(total_amount)/@numYears as AverageAnnualExpenses from pl_level2_ytd";
         /// <param name="date">Date (inclusive) as of which to return the balance sheet for</param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-        public async Task<List<BalanceSheetItem>> GetBalanceSheetAsync(List<string> parentAccountGuids, DateOnly date)
+        public async Task<List<ReportItem>> GetBalanceSheetAsync(List<string> parentAccountGuids, DateOnly date)
         {
             if (parentAccountGuids == null || parentAccountGuids.Count == 0)
             {
                 throw new ArgumentException("At least one parent account guid must be provided");
             }
-            var results = new List<BalanceSheetItem>();
+            var results = new List<ReportItem>();
 
             using (var connection = new SqliteConnection(_connectionString))
             {
@@ -293,11 +293,11 @@ ORDER BY general_account_type, account_code;";
                     {
                         while (await reader.ReadAsync())
                         {
-                            results.Add(new BalanceSheetItem
+                            results.Add(new ReportItem
                             {
                                 AccountType = reader.GetString(0),
                                 AccountName = reader.GetString(1),
-                                Balance = reader.GetDecimal(2),
+                                Amount = reader.GetDecimal(2),
                             });
                         }
                     } 
@@ -313,8 +313,8 @@ ORDER BY general_account_type, account_code;";
         /// <returns></returns>
         public async Task<decimal> GetNetWorthAsync(DateOnly date)
         {
-            List<BalanceSheetItem> balanceSheet = await GetBalanceSheetAsync(await GetRootBalanceSheetAccountGuids(), date);
-            return balanceSheet.Sum(b=>b.Balance);
+            List<ReportItem> balanceSheet = await GetBalanceSheetAsync(await GetRootBalanceSheetAccountGuids(), date);
+            return balanceSheet.Sum(b=>b.Amount);
         }
 
         public async Task<List<InvestmentItem>> GetInvestmentsAsync(List<string> investmentParentAccountGuids, string netChangeInterval, string netChangeInterval2, TimeSpan cutoffTime)
@@ -452,7 +452,7 @@ LEFT JOIN prev_balances2 p2 on b.guid=p2.guid";
                             {
                                 AccountType = reader.GetString(0),
                                 AccountName = reader.GetString(1),
-                                Balance = reader.GetDecimal(2),
+                                Amount = reader.GetDecimal(2),
                                 PreviousBalance = reader[3] != DBNull.Value ? reader.GetDecimal(3) : 0,
                                 PreviousBalance2 = reader[4] != DBNull.Value ? reader.GetDecimal(4) : 0
                             });

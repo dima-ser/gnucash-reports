@@ -14,7 +14,6 @@ namespace GnuCashReports.Pages
         private readonly DatabaseService _plService;
         private readonly AppSettings _appSettings;
 
-        //public List<ProfitLossItem> ProfitLossData { get; set; } = new();
         public decimal percentSpentLeftYear, percentSavedLeftYear;
         public decimal percentSpentRightYear, percentSavedRightYear;
         [BindProperty (SupportsGet = true)]
@@ -39,9 +38,9 @@ namespace GnuCashReports.Pages
 
         public async Task OnGetAsync()
         {
-            List<ProfitLossItem> profitLossRight  = await _plService.GetLevel2ProfitLossAsync(
+            List<ReportItem> profitLossRight  = await _plService.GetLevel2ProfitLossAsync(
                 new DateOnly(YearRight, 1, 1), new DateOnly(YearRight, 12, 31));
-            List<ProfitLossItem> profitLossLeft  = await _plService.GetLevel2ProfitLossAsync(
+            List<ReportItem> profitLossLeft  = await _plService.GetLevel2ProfitLossAsync(
                 new DateOnly(YearLeft, 1, 1), new DateOnly(YearLeft, 12, 31));
 
             List<string> exludedIncomeAccounts = _appSettings.ExcludedIncomeAccountsFromSavingRate ?? new List<string>();

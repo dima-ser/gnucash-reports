@@ -12,7 +12,7 @@ namespace GnuCashReports.Pages
         private readonly DatabaseService _dbService;
         private readonly AppSettings _appSettings;
 
-        private List<BalanceSheetItem> LiquidAssetsData { get; set; } = new();
+        private List<ReportItem> LiquidAssetsData { get; set; } = new();
 
         public decimal TotalLiquidAssets { get; set; }
         public decimal AverageAnnualExpenses { get; set; }
@@ -45,7 +45,7 @@ namespace GnuCashReports.Pages
                 guids.Add(await _dbService.GetAccountGuid(accountName));
             }
             LiquidAssetsData = await _dbService.GetBalanceSheetAsync(guids, DateOnly.FromDateTime(DateTime.Now) );
-            TotalLiquidAssets = LiquidAssetsData.Sum(item => item.Balance);
+            TotalLiquidAssets = LiquidAssetsData.Sum(item => item.Amount);
             AverageAnnualExpenses = await _dbService.GetAverageAnnualExpenses();
             SafeWithdrawalRate = _appSettings.FISettings.SafeWithdrawalRate;
             TotalNeededForFI = AverageAnnualExpenses / SafeWithdrawalRate;
