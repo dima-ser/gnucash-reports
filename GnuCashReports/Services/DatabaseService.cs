@@ -327,20 +327,16 @@ ORDER BY general_account_type, account_code;";
                 await connection.OpenAsync();
 
                 var command = connection.CreateCommand();
-                StringBuilder sqlInList = new StringBuilder("");
-                for (int i = 0; i < investmentParentAccountGuids.Count; i++)
-                {
-                    command.Parameters.Add(new SqliteParameter("@guid"+i, investmentParentAccountGuids[i]));
-                    sqlInList.Append("@guid" + i + ",");
-                }
-                sqlInList.Remove(sqlInList.Length - 1, 1); // remove the last comma
+
+                string parentGuidsJson = JsonSerializer.Serialize(investmentParentAccountGuids);
+                command.Parameters.Add(new SqliteParameter("@parentGuidsJson", parentGuidsJson));
                 command.Parameters.Add(new SqliteParameter("@netChangeInterval", netChangeInterval));
                 command.Parameters.Add(new SqliteParameter("@netChangeInterval2", netChangeInterval2));
                 command.Parameters.Add(new SqliteParameter("@cutoffModifier", DateTime.Now.TimeOfDay < cutoffTime ? "start of day" : "1 second"));
                 command.CommandText = @"WITH RECURSIVE account_tree AS (
     SELECT guid, name, account_type, commodity_guid, commodity_scu, parent_guid
     FROM accounts
-    WHERE guid IN (" + sqlInList.ToString() + @")
+    WHERE guid IN (SELECT value FROM json_each(@parentGuidsJson))
     UNION ALL
 
     SELECT a.guid, a.name, a.account_type, a.commodity_guid, a.commodity_scu, a.parent_guid
