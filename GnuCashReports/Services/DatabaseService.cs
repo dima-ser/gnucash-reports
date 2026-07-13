@@ -183,11 +183,12 @@ select sum(total_amount)/@numYears as AverageAnnualExpenses from pl_level2_ytd";
                 }
             }
         }
-
+        
         /// <summary>
-        /// Returns a balance sheet for specified list of account Guids
+        /// Returns a balance sheet for specified list of account Guids as of specified date
         /// </summary>
-        /// <param name="parentAccountGuids"></param>
+        /// <param name="parentAccountGuids">Guids of accounts to list balances for</param>
+        /// <param name="date">Date (inclusive) as of which to return the balance sheet for</param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
         public async Task<List<BalanceSheetItem>> GetBalanceSheetAsync(List<string> parentAccountGuids, DateOnly date)
