@@ -195,7 +195,8 @@ select sum(total_amount)/@numYears as AverageAnnualExpenses from pl_level2_ytd";
 
         
         /// <summary>
-        /// Returns a balance sheet for specified list of account Guids as of specified date. Uses the last prices up through the report date
+        /// Returns a balance sheet for specified list of account Guids as of specified date. Uses the last prices up through the report date. 
+        /// Sub-account balances are summed up and only direct descendents of the specified parentAccountGuids are listed, including all sub-account balances
         /// </summary>
         /// <param name="parentAccountGuids">Guids of accounts to list balances for</param>
         /// <param name="date">Date (inclusive) as of which to return the balance sheet for</param>
@@ -318,6 +319,7 @@ ORDER BY general_account_type, account_code;";
 
         public async Task<List<BalanceSheetItem>> GetInvestmentsAsync(List<string> investmentParentAccountGuids, string netChangeInterval, string netChangeInterval2, TimeSpan cutoffTime)
         {
+
             var results = new List<BalanceSheetItem>();
 
             using (var connection = new SqliteConnection(_connectionString))
