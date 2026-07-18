@@ -59,10 +59,26 @@
             <td><b>@(Model.TotalOutflowsYear2().ToString("C0"))</b></td>
             <td class="text-end"><b>@(Model.TotalOutflowsYear1().ToString("C0"))</b></td>
         </tr>
+        <tr>
+            <td colspan="3"></td>
+        </tr>
         <tr style="font-size:large">
             <td><b>NET CHANGE</b></td>
             <td @(Model.NetChangeYear2() < 0 ? Html.Raw("class=\"text-danger\""): Html.Raw("class=\"text-success\""))><b>@(Model.NetChangeYear2().ToString("C0"))</b></td>
             <td class="text-end text-nowrap @(Model.NetChangeYear1() < 0 ? "text-danger" : "text-success")"><b>@(Model.NetChangeYear1().ToString("C0"))</b></td>
+        </tr>
+        <tr>
+            <td colspan="3"></td>
+        </tr>
+        <tr>
+            <td><b>BEGIN. CASH BALANCE</b></td>
+            <td><b>@Model.StartBalanceLeft.ToString("C0")</b></td>
+            <td class="text-end text-nowrap"><b>@Model.StartBalanceRight.ToString("C0")</b></td>
+        </tr>
+        <tr>
+            <td><b>END CASH BALANCE</b></td>
+            <td><b>@Model.EndBalanceLeft.ToString("C0")</b></td>
+            <td class="text-end text-nowrap"><b>@Model.EndBalanceRight.ToString("C0")</b></td>
         </tr>
     </tbody>
 </table>

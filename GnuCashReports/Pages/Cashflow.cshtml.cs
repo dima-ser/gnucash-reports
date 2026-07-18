@@ -22,6 +22,8 @@ namespace GnuCashReports.Pages
         public int YearRight {get; set;} = DateTime.Now.Year;
         [BindProperty (SupportsGet = true)]
         public int YearLeft {get; set;} = DateTime.Now.Year - 1;
+        public decimal StartBalanceLeft, StartBalanceRight;
+        public decimal EndBalanceLeft, EndBalanceRight;
         public SelectList YearListRight, YearListLeft;
         
         public decimal TotalInflowsYear1(){ return Inflows.Sum(i=>i.AmountRight);}
@@ -56,22 +58,10 @@ namespace GnuCashReports.Pages
             Dictionary<string, decimal> outflowsRight = new Dictionary<string, decimal>();
             Dictionary<string, decimal> inflowsLeft = new Dictionary<string, decimal>();
             Dictionary<string, decimal> outflowsLeft = new Dictionary<string, decimal>();
-            List<CashFlowItem> cashFlowItemsRight  = await _dbService.GetCashFlowStatement(
-                _appSettings.CashFlowSettings.ParentCashAccount, 
-                new DateTime(YearRight, 1, 1), 
-                new DateTime(YearRight, 12, 31));
-            inflowsRight = RewriteCashflowCategories(
-                cashFlowItemsRight.Where(c => c.Inflow > 0).ToList(), 
-                _appSettings.CashFlowSettings.InflowCategories, 
-                CashFlowType.Inflow);
-            outflowsRight = RewriteCashflowCategories(
-                cashFlowItemsRight.Where(c => c.Outflow > 0).ToList(), 
-                _appSettings.CashFlowSettings.OutflowCategories, 
-                CashFlowType.Outflow);
+
+            DateOnly startDateLeft = new DateOnly(YearLeft, 1, 1), endDateLeft = new DateOnly(YearLeft, 12, 31);
             List<CashFlowItem> cashFlowItemsLeft  = await _dbService.GetCashFlowStatement(
-                _appSettings.CashFlowSettings.ParentCashAccount, 
-                new DateTime(YearLeft, 1, 1), 
-                new DateTime(YearLeft, 12, 31));
+                _appSettings.CashFlowSettings.ParentCashAccount, startDateLeft, endDateLeft);
             inflowsLeft = RewriteCashflowCategories(
                 cashFlowItemsLeft.Where(c => c.Inflow > 0).ToList(), 
                 _appSettings.CashFlowSettings.InflowCategories, 
@@ -81,10 +71,30 @@ namespace GnuCashReports.Pages
                 _appSettings.CashFlowSettings.OutflowCategories, 
                 CashFlowType.Outflow);
 
+            DateOnly startDateRight = new DateOnly(YearRight, 1, 1), endDateRight = new DateOnly(YearRight, 12, 31);
+            List<CashFlowItem> cashFlowItemsRight  = await _dbService.GetCashFlowStatement(
+                _appSettings.CashFlowSettings.ParentCashAccount, startDateRight, endDateRight);
+            inflowsRight = RewriteCashflowCategories(
+                cashFlowItemsRight.Where(c => c.Inflow > 0).ToList(), 
+                _appSettings.CashFlowSettings.InflowCategories, 
+                CashFlowType.Inflow);
+            outflowsRight = RewriteCashflowCategories(
+                cashFlowItemsRight.Where(c => c.Outflow > 0).ToList(), 
+                _appSettings.CashFlowSettings.OutflowCategories, 
+                CashFlowType.Outflow);
+
             Inflows = ThreeColumnReportItem.CombineItems(inflowsLeft, inflowsRight);
             Outflows = ThreeColumnReportItem.CombineItems(outflowsLeft, outflowsRight);
-
-
+            
+            string cashAccountGuid = await _dbService.GetAccountGuid(_appSettings.CashFlowSettings.ParentCashAccount);
+            StartBalanceLeft = (await _dbService.GetBalanceSheetAsync(
+                new List<string> {cashAccountGuid}, startDateLeft)).Sum(i=>i.Amount);
+            EndBalanceLeft = (await _dbService.GetBalanceSheetAsync(
+                new List<string> {cashAccountGuid}, endDateLeft)).Sum(i=>i.Amount);
+            StartBalanceRight = (await _dbService.GetBalanceSheetAsync(
+                new List<string> {cashAccountGuid}, startDateRight)).Sum(i=>i.Amount);
+            EndBalanceRight = (await _dbService.GetBalanceSheetAsync(
+                new List<string> {cashAccountGuid}, endDateRight)).Sum(i=>i.Amount);
         }
 
        

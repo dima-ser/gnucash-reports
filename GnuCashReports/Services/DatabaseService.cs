@@ -558,7 +558,7 @@ WHERE full_path = @fullAccountPath";
             }
         }
 
-        public async Task<List<CashFlowItem>> GetCashFlowStatement(string parentCashAccountPath, DateTime startDate, DateTime endDate)
+        public async Task<List<CashFlowItem>> GetCashFlowStatement(string parentCashAccountPath, DateOnly startDate, DateOnly endDate)
         {
             string parentCashAccountGuid = await GetAccountGuid(parentCashAccountPath);
             List<CashFlowItem> cashFlows = new List<CashFlowItem>();
