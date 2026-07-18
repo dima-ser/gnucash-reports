@@ -59,7 +59,7 @@ namespace GnuCashReports.Pages
             List<CashFlowItem> cashFlowItemsRight  = await _dbService.GetCashFlowStatement(
                 _appSettings.CashFlowSettings.ParentCashAccount, 
                 new DateTime(YearRight, 1, 1), 
-                new DateTime(YearRight + 1, 1, 1));
+                new DateTime(YearRight, 12, 31));
             inflowsRight = RewriteCashflowCategories(
                 cashFlowItemsRight.Where(c => c.Inflow > 0).ToList(), 
                 _appSettings.CashFlowSettings.InflowCategories, 
@@ -71,7 +71,7 @@ namespace GnuCashReports.Pages
             List<CashFlowItem> cashFlowItemsLeft  = await _dbService.GetCashFlowStatement(
                 _appSettings.CashFlowSettings.ParentCashAccount, 
                 new DateTime(YearLeft, 1, 1), 
-                new DateTime(YearLeft + 1, 1, 1));
+                new DateTime(YearLeft, 12, 31));
             inflowsLeft = RewriteCashflowCategories(
                 cashFlowItemsLeft.Where(c => c.Inflow > 0).ToList(), 
                 _appSettings.CashFlowSettings.InflowCategories, 
@@ -83,6 +83,7 @@ namespace GnuCashReports.Pages
 
             Inflows = ThreeColumnReportItem.CombineItems(inflowsLeft, inflowsRight);
             Outflows = ThreeColumnReportItem.CombineItems(outflowsLeft, outflowsRight);
+
 
         }
 

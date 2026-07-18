@@ -627,8 +627,7 @@ WHERE full_path = @fullAccountPath";
     JOIN transactions tx ON s.tx_guid = tx.guid
     WHERE s.tx_guid IN (SELECT tx_guid FROM transactions_touching_cash)
       AND s.account_guid NOT IN (SELECT guid FROM cash_accounts)
-      AND tx.post_date >= @startDate
-      AND tx.post_date <= @endDate
+      AND DATE(tx.post_date) >= DATE(@startDate) AND DATE(tx.post_date) <= DATE(@endDate)
   )
 
 -- 5. Aggregate inflows and outflows by the pre-cleaned counterparty account path
