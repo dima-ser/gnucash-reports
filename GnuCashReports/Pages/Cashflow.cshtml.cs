@@ -87,12 +87,13 @@ namespace GnuCashReports.Pages
             Outflows = ThreeColumnReportItem.CombineItems(outflowsLeft, outflowsRight);
             
             string cashAccountGuid = await _dbService.GetAccountGuid(_appSettings.CashFlowSettings.ParentCashAccount);
+            // since start date is inclusive, need to subtract a day to get the cash balance as of 12/31 the previous year
             StartBalanceLeft = (await _dbService.GetBalanceSheetAsync(
-                new List<string> {cashAccountGuid}, startDateLeft)).Sum(i=>i.Amount);
+                new List<string> {cashAccountGuid}, startDateLeft.AddDays(-1))).Sum(i=>i.Amount);
             EndBalanceLeft = (await _dbService.GetBalanceSheetAsync(
                 new List<string> {cashAccountGuid}, endDateLeft)).Sum(i=>i.Amount);
             StartBalanceRight = (await _dbService.GetBalanceSheetAsync(
-                new List<string> {cashAccountGuid}, startDateRight)).Sum(i=>i.Amount);
+                new List<string> {cashAccountGuid}, startDateRight.AddDays(-1))).Sum(i=>i.Amount);
             EndBalanceRight = (await _dbService.GetBalanceSheetAsync(
                 new List<string> {cashAccountGuid}, endDateRight)).Sum(i=>i.Amount);
         }
