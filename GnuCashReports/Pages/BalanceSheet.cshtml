@@ -8,16 +8,19 @@
 <h1 class="text-center">Balance Sheet</h1>
 
 <table class="table">
-@*     <thead>
+    <form method="get" class="d-inline">
+    <thead>
         <tr>
             <th scope="col"></th>
-            <th scope="col">@(DateTime.Now.Year - 1)</th>
-            <th scope="col">@DateTime.Now.Year YTD</th>
+            <th class="text-end" scope="col">
+                <select asp-for="Date" asp-items="Model.DateList" onchange="this.form.submit()"></select>
+            </th>
         </tr>
-    </thead> *@
+    </thead> 
+    </form>
     <tbody>
         <tr>
-            <td colspan="3"><b>ASSETS</b></td>
+            <td colspan="2"><b>ASSETS</b></td>
         </tr>
         @foreach (var item in Model.BalanceSheetData.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_ASSET))
         {
@@ -34,7 +37,7 @@
             <td colspan="2"></td>
         </tr>
         <tr>
-            <td colspan="4"><b>LIABILITIES</b></td>
+            <td colspan="2"><b>LIABILITIES</b></td>
         </tr>
         @foreach (var item in Model.BalanceSheetData.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_LIABILITY).OrderBy(i => i.AccountName))
         {
