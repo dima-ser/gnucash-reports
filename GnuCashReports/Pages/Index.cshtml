@@ -4,22 +4,76 @@
     ViewData["Title"] = "Home";
 }
 
+<h1 class="display-4 text-center">GnuCash Reports</h1>
 
-<h1 class="display-4">GnuCash Reports</h1>
+@if (Model.DashboardLayout != null && Model.DashboardLayout.Count > 0)
+{
+<div class="container px-0">
+  <div class="row justify-content-start" >
+        @foreach (List<string> column in Model.DashboardLayout)
+        {
+            <div class="col-lg-4 col-md-6 px-0">
+              @foreach (string report in column)
+              {
+                <iframe src="/@report" class="w-100 dynamic-iframe overflow-hidden" scrolling="no"></iframe>
+              }
+            </div>
+        }
+  </div>
+</div> 
+}
+else
+{
+    <p class="d-flex justify-content-center"">
+      No reports configured to show on the home page. Please configure the DashboardLayout in appsettings.json
+       <ul class="fs-5">
+      <li><a href="/profitloss">Profit & Loss</a></li>
+      <li><a href="/balancesheet">Balance Sheet</a></li>
+      <li><a href="/investments">Investments</a></li>
+      <li><a href="/networthchart">Net Worth Chart</a></li>
+      <li><a href="/cashflow">Cash Flow</a></li>
+      <li><a href="/savingsrate">Savings Rate</a></li>
+      <li><a href="/availabletospend">Available To Spend</a></li>
+      <li><a href="/fireport">FI Report</a></li>
+      <li><a href="/lastupdated">Last Updated</a></li>
+      </ul>
+    </p>
+   
+}
 
-<ul class="fs-5">
-    <li><a href="/profitloss">Profit & Loss</a></li>
-    <li><a href="/balancesheet">Balance Sheet</a></li>
-    <li><a href="/investments">Investments</a></li>
-    <li><a href="/networthchart">Net Worth Chart</a></li>
-    <li><a href="/cashflow">Cash Flow</a></li>
-    <li><a href="/savingsrate">Savings Rate</a></li>
-    <li><a href="/availabletospend">Available To Spend</a></li>
-    <li><a href="/fireport">FI Report</a></li>
-    <li><a href="/lastupdated">Last Updated</a></li>
-</ul>
 
-<div class="form-check form-switch ms-auto me-3 mt-2">
-    <input class="form-check-input" type="checkbox" id="themeToggle">
+
+<div class="form-check form-switch ms-auto me-3 mt-2 d-flex justify-content-center">
+    <input class="form-check-input" type="checkbox" id="themeToggle">&nbsp;
     <label class="form-check-label" for="themeToggle">Dark Mode</label>
 </div>
+    <br/>
+    <br/>
+
+
+<script>
+  // Select all iframes with the designated class
+  const iframes = document.querySelectorAll('.dynamic-iframe');
+
+  iframes.forEach((iframe) => {
+    // Wait for each individual iframe's DOM to load
+    iframe.addEventListener('load', () => {
+      try {
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        
+        // Setup an independent observer for this iframe
+        const resizeObserver = new ResizeObserver(() => {
+          // Reset height temporarily so it can shrink if content gets smaller
+          iframe.style.height = 'auto';
+          // Set new height based on inner content scroll height
+          iframe.style.height = iframeDoc.documentElement.scrollHeight + 'px';
+        });
+        
+        // Observe the body of this specific iframe document
+        resizeObserver.observe(iframeDoc.body);
+      } catch (error) {
+        console.error("Cannot access iframe. Confirm it is on the same domain.", error);
+      }
+    });
+  });
+</script> 
