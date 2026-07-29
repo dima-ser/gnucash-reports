@@ -1,0 +1,48 @@
+﻿@page
+@model DbStatsModel
+@{
+    ViewData["Title"] = "Last Updated Date";
+}
+@using GnuCashReports.Services
+
+<div class="container py-5">
+  <div class="row row-cols-1 row-cols-md-4 g-4">
+
+    <div class="col">
+      <div class="card h-100 text-center shadow">
+        <div class="card-body">
+          <h2 class="card-title mb-3">@Model.DbStats.LastTransactionDate.ToShortDateString()</h2>
+          <p class="card-text text-muted">Last Transaction</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col">
+      <div class="card h-100 text-center shadow">
+        <div class="card-body">
+          <h2 class="card-title mb-3">@Model.DbStats.LastPriceDate.ToShortDateString()</h2>
+          <p class="card-text text-muted">Last Price</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="card h-100 text-center shadow">
+        <div class="card-body">
+          <h2 class="card-title mb-3">@Model.DbStats.YearsSinceOldestTransaction</h2>
+          <p class="card-text text-muted">Years Worth of Data</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="card h-100 text-center shadow">
+        <div class="card-body">
+          <h2 class="card-title mb-3">@Model.DbStats.TransactionCount</h2>
+          <p class="card-text text-muted">Transactions</p>
+        </div>
+      </div>
+    </div>
+
+</div>
+</div>

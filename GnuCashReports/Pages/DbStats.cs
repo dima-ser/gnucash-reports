@@ -6,20 +6,20 @@ using GnuCashReports.Services;
 namespace GnuCashReports.Pages
 {
 
-    public class LastUpdatedModel : PageModel
+    public class DbStatsModel : PageModel
     {
         private readonly DatabaseService _dbService;
 
-        public LastUpdated LastUpdated { get; set; } = new LastUpdated();
+        public DatabaseStats DbStats { get; set; } = new DatabaseStats();
 
-        public LastUpdatedModel(DatabaseService dbService)
+        public DbStatsModel(DatabaseService dbService)
         {
             _dbService = dbService;
         }
 
         public async Task OnGetAsync()
         {
-            LastUpdated = await _dbService.GetLastUpdatedAsync();
+            DbStats = await _dbService.GetDatabaseStatsAsync();
         }
     }
 

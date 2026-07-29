@@ -463,19 +463,39 @@ LEFT JOIN prev_balances2 p2 on b.guid=p2.guid";
             }
         }
 
-        public async Task<LastUpdated> GetLastUpdatedAsync()
+        public async Task<DatabaseStats> GetDatabaseStatsAsync()
         {
-            var result = new LastUpdated();
+            var result = new DatabaseStats();
 
             using (var connection = new SqliteConnection(_connectionString))
             {
                 await connection.OpenAsync();
 
                 var command = connection.CreateCommand();
-                command.CommandText = @"select MAX(post_date) as date, 'transaction' as date_type from transactions
-where post_date <= DATE('now')  
-union all
-select max(date) as date, 'price' as date_type from prices";
+                command.CommandText = @"SELECT
+                    t.last_transaction_date,
+                    p.last_price_date,
+                    t.oldest_transaction_date,
+                    t.transaction_count,
+                    a.account_count_all,
+                    a.account_count_active
+                FROM (
+                    SELECT
+                        MAX(CASE WHEN post_date <= DATE('now') THEN post_date END) AS last_transaction_date,
+                        MIN(post_date) AS oldest_transaction_date,
+                        COUNT(guid) AS transaction_count
+                    FROM transactions
+                ) t
+                CROSS JOIN (
+                    SELECT MAX(date) AS last_price_date
+                    FROM prices
+                ) p
+                CROSS JOIN (
+                    SELECT
+                        COUNT(CASE WHEN placeholder = 0 THEN 1 END) AS account_count_all,
+                        COUNT(CASE WHEN placeholder = 0 AND hidden = 0 THEN 1 END) AS account_count_active
+                    FROM accounts
+                ) a;";
 
                 using (var reader = await command.ExecuteReaderAsync())
                 {
@@ -484,16 +504,28 @@ select max(date) as date, 'price' as date_type from prices";
                         while (await reader.ReadAsync())
                         {
                             DateTime temp = DateTime.MinValue;
-                            if (reader[1].ToString() == "transaction")
-                            {
-                                DateTime.TryParse(reader[0].ToString(), out temp);
-                                result.LastTransactionDate = temp;
-                            }
-                            else if (reader[1].ToString() == "price")
-                            {
-                                DateTime.TryParse(reader[0].ToString(), out temp);
-                                result.LastPriceDate = temp;
-                            }
+                            DateTime.TryParse(reader["last_transaction_date"].ToString(), out temp);
+                            result.LastTransactionDate = DateOnly.FromDateTime(temp);
+                            DateTime.TryParse(reader["last_price_date"].ToString(), out temp);
+                            result.LastPriceDate = DateOnly.FromDateTime(temp);;
+                            DateTime.TryParse(reader["oldest_transaction_date"].ToString(), out temp);
+
+                            result.OldestTransactionDate = DateOnly.FromDateTime(temp);;
+                            result.TransactionCount = Convert.ToInt32(reader["transaction_count"]);
+                            result.AllAccountCount = Convert.ToInt32(reader["account_count_all"]);
+                            result.ActiveAccountCount = Convert.ToInt32(reader["account_count_active"]);
+
+                            // DateTime temp = DateTime.MinValue;
+                            // if (reader[1].ToString() == "transaction")
+                            // {
+                            //     DateTime.TryParse(reader[0].ToString(), out temp);
+                            //     result.LastTransactionDate = temp;
+                            // }
+                            // else if (reader[1].ToString() == "price")
+                            // {
+                            //     DateTime.TryParse(reader[0].ToString(), out temp);
+                            //     result.LastPriceDate = temp;
+                            // }
                         }
                     }
                     return result;
