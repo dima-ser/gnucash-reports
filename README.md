@@ -49,7 +49,7 @@ These are used in your expense reports to make them easier to see at a glance an
 Number of years to display on net worth chart (including current year to date).
 
 ## DashboardLayout [optional]
-Defines which reports are shown on the home page. Report names are the same as their relative URL endpoints (`balancesheet` for Balance Sheet, etc). Each string array will be rendered as a single Bootstrap column. You can combine multiple reports in the same column by putting them in the same string array.
+A list of strings that defines which reports are shown on the home page and in which order. Report names are the same as their relative URL endpoints (`balancesheet` for Balance Sheet, etc). Reports are rendered top-to-bottom, then left-to-right (like newspaper columns). The number of columns adjusts automatically based on the screen width (maximum of 3 columns).
 
 ## InvestmentSettings [optional]
 These are required for the "Investments" report. If you don't track investments in GnuCash, you can omit this whole section. However, if any of these are configured, the rest are required as well.

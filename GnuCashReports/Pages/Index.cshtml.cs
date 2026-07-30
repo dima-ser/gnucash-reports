@@ -8,7 +8,7 @@ namespace GnuCashReports.Pages
     public class IndexModel : PageModel
     {
         private readonly ILogger<IndexModel> _logger;
-        public List<List<string>>? DashboardLayout {get; set; }
+        public List<string>? DashboardLayout {get; set; }
 
         public IndexModel(ILogger<IndexModel> logger, IOptions<AppSettings> appSettings)
         {

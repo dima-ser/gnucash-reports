@@ -5,21 +5,20 @@
 }
 
 <h1 class="display-4 text-center">GnuCash Reports</h1>
+<style type="text/css">
+.container {
+  padding-left:0;
+  padding-right:0;
+}
+</style>
 
 @if (Model.DashboardLayout != null && Model.DashboardLayout.Count > 0)
 {
-<div class="container px-0">
-  <div class="row justify-content-start" >
-        @foreach (List<string> column in Model.DashboardLayout)
-        {
-            <div class="col-lg-4 col-md-6 px-0 mb-10">
-              @foreach (string report in column)
-              {
-                <iframe src="/@report" class="w-100 dynamic-iframe overflow-hidden mb-4" scrolling="no"></iframe>
-              }
-            </div>
-        }
-  </div>
+<div class="masonry">
+    @foreach (string report in Model.DashboardLayout)
+    {
+      <iframe src="/@report" class="dynamic-iframe" scrolling="no"></iframe>
+    }
 </div> 
 }
 else
@@ -40,7 +39,6 @@ else
     </p>
    
 }
-
 
 
 <div class="form-check form-switch ms-auto me-3 mt-2 d-flex justify-content-center">

@@ -28,7 +28,7 @@ namespace GnuCashReports.Models
         public Dictionary<string, string>? ExpenseAccountEmojis { get; set; }
 
         public int NetWorthYearsToDisplay { get; set; }
-        public List<List<string>>? DashboardLayout {get; set;}
+        public List<string>? DashboardLayout {get; set;}
         public InvestmentSettings? InvestmentSettings { get; set; }
 
         public FISettings? FISettings { get; set; }
