@@ -20,10 +20,12 @@ namespace GnuCashReports.Pages
         public List<string>? ExcludedAccounts { get; set; }
         public decimal TargetAmountUS, TargetAmountIntnl, TargetAmountBonds;
         public decimal ActualAmountUS, ActualAmountIntnl, ActualAmountBonds;
-        public decimal TotalAmount, TotalPreviousAmount, NetChange, NetPercentageChange, TotalPreviousAmount2, NetChange2, NetPercentageChange2;
+        public decimal TotalAmount, TotalPreviousAmount, NetChange, NetPercentageChange;
         public decimal RebalanceRelativePercentage;
         public bool RebalanceUS, RebalanceIntnl, RebalanceBonds;
-        public string NetChangeInterval, NetChangeInterval2, NetChangeIntervalUserFriendly, NetChangeIntervalUserFriendly2;
+        //public string NetChangeInterval, NetChangeInterval2, NetChangeIntervalUserFriendly, NetChangeIntervalUserFriendly2;
+        [BindProperty (SupportsGet = true)]
+        public DateOnly Date {get; set;} = DateOnly.FromDateTime(DateTime.Now);
         public InvestmentsModel(DatabaseService dbService, IOptions<AppSettings> appSettings)
         {
             if (appSettings.Value.InvestmentSettings == null)
@@ -34,31 +36,35 @@ namespace GnuCashReports.Pages
             InvestmentAssetAllocations = _appSettings.InvestmentSettings.InvestmentAssetAllocations;
             ExcludedAccounts = _appSettings.InvestmentSettings.ExcludedAccounts;
             RebalanceRelativePercentage = _appSettings.InvestmentSettings.RebalanceRelativePercentage;
-            NetChangeInterval = _appSettings.InvestmentSettings!.NetChangeInterval;
-            NetChangeInterval2 = _appSettings.InvestmentSettings!.NetChangeInterval2;
+            //NetChangeInterval = _appSettings.InvestmentSettings!.NetChangeInterval;
+            //NetChangeInterval2 = _appSettings.InvestmentSettings!.NetChangeInterval2;
 
-            UpdateFriendlyNetChangeInterval(NetChangeInterval, out NetChangeIntervalUserFriendly);
-            UpdateFriendlyNetChangeInterval(NetChangeInterval2, out NetChangeIntervalUserFriendly2);
+            //UpdateFriendlyNetChangeInterval(NetChangeInterval, out NetChangeIntervalUserFriendly);
+            //UpdateFriendlyNetChangeInterval(NetChangeInterval2, out NetChangeIntervalUserFriendly2);
+
+            // if the current time is before the cutoff, use yesterday's date
+            if (DateTime.Now.TimeOfDay < _appSettings.InvestmentSettings!.TimeOfDayCutoff)
+                Date = Date.AddDays(-1);
         }
 
-        public void UpdateFriendlyNetChangeInterval(string netChangeInterval, out string netChangeIntervalUserFriendly)
-        {
-            netChangeIntervalUserFriendly = netChangeInterval;
-            if (netChangeInterval.StartsWith('-'))
-            {
-                string[] parts = netChangeInterval.Split(' ');
-                if (parts.Length == 2 && int.TryParse(parts[0], out int value))
-                {
-                    value = Math.Abs(value);
-                    if (parts[1] == "day" || parts[1] == "days")
-                        netChangeIntervalUserFriendly = value + " day" + (value > 1 ? "s" : "") + " ago";
-                    else if (parts[1] == "month" || parts[1] == "months")
-                        netChangeIntervalUserFriendly = value + " month" + (value > 1 ? "s" : "") + " ago";
-                    else if (parts[1] == "year" || parts[1] == "years")
-                        netChangeIntervalUserFriendly = value + " year" + (value > 1 ? "s" : "") + " ago";
-                }
-            }
-        }
+        // public void UpdateFriendlyNetChangeInterval(string netChangeInterval, out string netChangeIntervalUserFriendly)
+        // {
+        //     netChangeIntervalUserFriendly = netChangeInterval;
+        //     if (netChangeInterval.StartsWith('-'))
+        //     {
+        //         string[] parts = netChangeInterval.Split(' ');
+        //         if (parts.Length == 2 && int.TryParse(parts[0], out int value))
+        //         {
+        //             value = Math.Abs(value);
+        //             if (parts[1] == "day" || parts[1] == "days")
+        //                 netChangeIntervalUserFriendly = value + " day" + (value > 1 ? "s" : "") + " ago";
+        //             else if (parts[1] == "month" || parts[1] == "months")
+        //                 netChangeIntervalUserFriendly = value + " month" + (value > 1 ? "s" : "") + " ago";
+        //             else if (parts[1] == "year" || parts[1] == "years")
+        //                 netChangeIntervalUserFriendly = value + " year" + (value > 1 ? "s" : "") + " ago";
+        //         }
+        //     }
+        // }
 
         public async Task OnGetAsync()
         {
@@ -68,8 +74,7 @@ namespace GnuCashReports.Pages
             {
                 investmentParentGuids.Add(await _dbService.GetAccountGuid(accountName));
             }
-            List<InvestmentItem> investmentData = await _dbService.GetInvestmentsAsync(investmentParentGuids,
-                NetChangeInterval, NetChangeInterval2, _appSettings.InvestmentSettings!.TimeOfDayCutoff);
+            List<ReportItem> investmentData = await _dbService.GetInvestmentsAsync(investmentParentGuids, Date);
 
             foreach (var investmentItem in investmentData)
             {
@@ -80,6 +85,7 @@ namespace GnuCashReports.Pages
                 }
                 // we only need asset allocations for accounts with current balance over 0 as we don't track previous asset allocations
                 // also exclude accounts specified in the ExcludedAccounts configuration
+                // don't think we need this anymore, remove?
                 else if (investmentItem.Amount < AppSettings.SQLITE_FLOATING_POINT_MARGIN || (ExcludedAccounts != null && ExcludedAccounts.Contains(investmentItem.AccountName)))
                 {
                     var assetAllocationItem = new AssetAllocationItem(investmentItem, new AssetAllocation("Dummy", 0, 0, 0));
@@ -98,25 +104,28 @@ namespace GnuCashReports.Pages
             ActualAmountBonds = AssetAllocationData.Sum(i => i.BondAmount);
             TotalAmount = AssetAllocationData.Sum(i => i.InvestmentItem.Amount);
 
-            TotalPreviousAmount = AssetAllocationData.Sum(i => i.InvestmentItem.PreviousBalance);
+            List<ReportItem> prevBalanceSheet = await _dbService.GetBalanceSheetAsync(investmentParentGuids, Date.AddDays(-1));
+            TotalPreviousAmount = prevBalanceSheet.Sum(i=>i.Amount);
             NetChange = TotalAmount - TotalPreviousAmount;
             if (TotalPreviousAmount != 0)
                 NetPercentageChange = NetChange / TotalPreviousAmount;
             else
                 NetPercentageChange = Decimal.MaxValue;
 
-            TotalPreviousAmount2 = AssetAllocationData.Sum(i => i.InvestmentItem.PreviousBalance2);
-            NetChange2 = TotalAmount - TotalPreviousAmount2;
-            if (TotalPreviousAmount2 != 0)
-                NetPercentageChange2 = NetChange2 / TotalPreviousAmount2;
-            else
-                NetPercentageChange2 = Decimal.MaxValue;
+            // TotalPreviousAmount2 = AssetAllocationData.Sum(i => i.InvestmentItem.PreviousBalance2);
+            // NetChange2 = TotalAmount - TotalPreviousAmount2;
+            // if (TotalPreviousAmount2 != 0)
+            //     NetPercentageChange2 = NetChange2 / TotalPreviousAmount2;
+            // else
+            //     NetPercentageChange2 = Decimal.MaxValue;
 
             ActualAssetAllocation = new AssetAllocation("Actual Asset Allocation", ActualAmountUS / TotalAmount * 100,
                     ActualAmountIntnl / TotalAmount * 100, ActualAmountBonds / TotalAmount * 100);
             RebalanceUS = Math.Abs((ActualAmountUS - TargetAmountUS) / TargetAmountUS * 100) >= RebalanceRelativePercentage;
             RebalanceIntnl = Math.Abs((ActualAmountIntnl - TargetAmountIntnl) / TargetAmountIntnl * 100) >= RebalanceRelativePercentage;
             RebalanceBonds = Math.Abs((ActualAmountBonds - TargetAmountBonds) / TargetAmountBonds * 100) >= RebalanceRelativePercentage;
+
+            
         }
     }
 

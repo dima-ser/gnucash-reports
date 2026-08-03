@@ -317,10 +317,10 @@ ORDER BY general_account_type, account_code;";
             return balanceSheet.Sum(b=>b.Amount);
         }
 
-        public async Task<List<InvestmentItem>> GetInvestmentsAsync(List<string> investmentParentAccountGuids, string netChangeInterval, string netChangeInterval2, TimeSpan cutoffTime)
+        public async Task<List<ReportItem>> GetInvestmentsAsync(List<string> investmentParentAccountGuids, DateOnly date)
         {
 
-            var results = new List<InvestmentItem>();
+            var results = new List<ReportItem>();
 
             using (var connection = new SqliteConnection(_connectionString))
             {
@@ -330,9 +330,7 @@ ORDER BY general_account_type, account_code;";
 
                 string parentGuidsJson = JsonSerializer.Serialize(investmentParentAccountGuids);
                 command.Parameters.Add(new SqliteParameter("@parentGuidsJson", parentGuidsJson));
-                command.Parameters.Add(new SqliteParameter("@netChangeInterval", netChangeInterval));
-                command.Parameters.Add(new SqliteParameter("@netChangeInterval2", netChangeInterval2));
-                command.Parameters.Add(new SqliteParameter("@cutoffModifier", DateTime.Now.TimeOfDay < cutoffTime ? "start of day" : "1 second"));
+                command.Parameters.Add(new SqliteParameter("@date", date));
                 command.CommandText = @"WITH RECURSIVE account_tree AS (
     SELECT guid, name, account_type, commodity_guid, commodity_scu, parent_guid
     FROM accounts
@@ -347,20 +345,7 @@ latest_prices AS (
     SELECT p.commodity_guid,
            MAX(p.date) AS latest_date
     FROM prices p
-    GROUP BY p.commodity_guid
-),
-prev_prices AS (
-	 SELECT p.commodity_guid,
-           MAX(p.date) AS latest_date
-    FROM prices p
-	WHERE p.date < datetime('now', 'localtime', @netChangeInterval, @cutoffModifier)
-    GROUP BY p.commodity_guid
-),
-prev_prices2 AS (
-	 SELECT p.commodity_guid,
-           MAX(p.date) AS latest_date
-    FROM prices p
-	WHERE p.date < datetime('now', 'localtime', @netChangeInterval2, @cutoffModifier)
+    WHERE DATE(p.date) <= DATE(@date) 
     GROUP BY p.commodity_guid
 ),
 price_lookup AS (
@@ -368,18 +353,6 @@ price_lookup AS (
            p.value_num * 1.0 / p.value_denom AS price
     FROM prices p
     JOIN latest_prices lp ON p.commodity_guid = lp.commodity_guid AND p.date = lp.latest_date
-),
-prev_price_lookup AS (
-    SELECT p.commodity_guid,
-           p.value_num * 1.0 / p.value_denom AS price
-    FROM prices p
-    JOIN prev_prices lp ON p.commodity_guid = lp.commodity_guid AND p.date = lp.latest_date
-),
-prev_price_lookup2 AS (
-    SELECT p.commodity_guid,
-           p.value_num * 1.0 / p.value_denom AS price
-    FROM prices p
-    JOIN prev_prices2 lp ON p.commodity_guid = lp.commodity_guid AND p.date = lp.latest_date
 ),
 balances AS (
     SELECT 
@@ -393,54 +366,15 @@ balances AS (
                 SUM(s.value_num * 1.0 / s.value_denom)
         END AS balance
     FROM splits s
-    JOIN transactions t ON s.tx_guid = t.guid	
+    JOIN transactions t ON s.tx_guid = t.guid and DATE(t.post_date) <= DATE(@date) 	
     JOIN account_tree at ON s.account_guid = at.guid
     LEFT JOIN commodities c ON at.commodity_guid = c.guid
     LEFT JOIN price_lookup pl ON at.commodity_guid = pl.commodity_guid
     GROUP BY at.guid, at.account_type, at.name
-    --HAVING ABS(balance) > 0.0001
-),
-prev_balances AS (
-    SELECT 
-		at.guid,
-        at.account_type,
-        at.name AS account_name,
-		CASE 
-            WHEN at.account_type in ('MUTUAL', 'STOCK') AND c.namespace != 'CURRENCY' THEN
-                SUM(s.quantity_num * 1.0 / s.quantity_denom * ppl.price)
-            ELSE
-                SUM(s.value_num * 1.0 / s.value_denom)
-        END AS prev_balance
-    FROM splits s
-    JOIN transactions t ON s.tx_guid = t.guid and t.post_date < datetime('now', 'localtime', @netChangeInterval)
-    JOIN account_tree at ON s.account_guid = at.guid
-    LEFT JOIN commodities c ON at.commodity_guid = c.guid
-	LEFT JOIN prev_price_lookup ppl ON at.commodity_guid = ppl.commodity_guid
-    GROUP BY at.guid, at.account_type, at.name
-    --HAVING ABS(prev_balance) > 0.0001 
-),
-prev_balances2 AS (
-    SELECT 
-		at.guid,
-        at.account_type,
-        at.name AS account_name,
-		CASE 
-            WHEN at.account_type in ('MUTUAL', 'STOCK') AND c.namespace != 'CURRENCY' THEN
-                SUM(s.quantity_num * 1.0 / s.quantity_denom * ppl.price)
-            ELSE
-                SUM(s.value_num * 1.0 / s.value_denom)
-        END AS prev_balance2
-    FROM splits s
-    JOIN transactions t ON s.tx_guid = t.guid and t.post_date < datetime('now', 'localtime', @netChangeInterval2)
-    JOIN account_tree at ON s.account_guid = at.guid
-    LEFT JOIN commodities c ON at.commodity_guid = c.guid
-	LEFT JOIN prev_price_lookup2 ppl ON at.commodity_guid = ppl.commodity_guid
-    GROUP BY at.guid, at.account_type, at.name
-    --HAVING ABS(prev_balance) > 0.0001 
+    HAVING ABS(balance) > 0.0001
 )
-SELECT b.account_type, b.account_name, b.balance, p.prev_balance, p2.prev_balance2
-FROM balances b LEFT JOIN prev_balances p on b.guid=p.guid
-LEFT JOIN prev_balances2 p2 on b.guid=p2.guid";
+SELECT b.account_type, b.account_name, b.balance
+FROM balances b";
 
                 using (var reader = await command.ExecuteReaderAsync())
                 {
@@ -448,13 +382,11 @@ LEFT JOIN prev_balances2 p2 on b.guid=p2.guid";
                     {
                         while (await reader.ReadAsync())
                         {
-                            results.Add(new InvestmentItem
+                            results.Add(new ReportItem
                             {
                                 AccountType = reader.GetString(0),
                                 AccountName = reader.GetString(1),
-                                Amount = reader.GetDecimal(2),
-                                PreviousBalance = reader[3] != DBNull.Value ? reader.GetDecimal(3) : 0,
-                                PreviousBalance2 = reader[4] != DBNull.Value ? reader.GetDecimal(4) : 0
+                                Amount = reader.GetDecimal(2)
                             });
                         }
                     }

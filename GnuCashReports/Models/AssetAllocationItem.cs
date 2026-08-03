@@ -2,10 +2,10 @@
 {
     public class AssetAllocationItem
     {
-        public InvestmentItem InvestmentItem  { get; set; }
+        public ReportItem InvestmentItem  { get; set; }
         private AssetAllocation _assetAllocation { get; set; }
 
-        public AssetAllocationItem(InvestmentItem investmentItem, AssetAllocation assetAllocation)
+        public AssetAllocationItem(ReportItem investmentItem, AssetAllocation assetAllocation)
         {
             InvestmentItem = investmentItem;
             _assetAllocation = assetAllocation;
