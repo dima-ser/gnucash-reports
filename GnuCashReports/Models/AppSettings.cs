@@ -13,7 +13,7 @@ namespace GnuCashReports.Models
         public static string ACCOUNT_TYPE_EXPENSE = "EXPENSE";
         public static string ACCOUNT_TYPE_ASSET = "ASSET";
         public static string ACCOUNT_TYPE_LIABILITY = "LIABILITY";
-        public static decimal SQLITE_FLOATING_POINT_MARGIN = 0.0001M;
+        //public static decimal SQLITE_FLOATING_POINT_MARGIN = 0.0001M;
         public required string GnuCashDbConnectionString { get; set; }
         public required string RootAccountName { get; set; }
         public string? ClosingEntriesPattern { get; set; }
