@@ -14,11 +14,6 @@ namespace GnuCashReports.Models
         public static string ACCOUNT_TYPE_ASSET = "ASSET";
         public static string ACCOUNT_TYPE_LIABILITY = "LIABILITY";
         public static decimal SQLITE_FLOATING_POINT_MARGIN = 0.0001M;
-
-        public static readonly Regex SqliteModifierValidator = new Regex(
-            @"^(-\d+\s(?:day|days|month|months|year|years)|start\s+of\s+(day|month|year))$",
-            RegexOptions.IgnoreCase | RegexOptions.Compiled
-        );
         public required string GnuCashDbConnectionString { get; set; }
         public required string RootAccountName { get; set; }
         public string? ClosingEntriesPattern { get; set; }
@@ -49,8 +44,6 @@ namespace GnuCashReports.Models
         public required AssetAllocation TargetAssetAllocation { get; set; }
         public required List<string>? ExcludedAccounts { get; set; }
         public decimal RebalanceRelativePercentage { get; set; }
-        public required string NetChangeInterval { get; set; }
-        public required string NetChangeInterval2 { get; set; }
         public required TimeSpan TimeOfDayCutoff { get; set; }
     }
 
@@ -109,11 +102,6 @@ namespace GnuCashReports.Models
 
                 if (settings.InvestmentSettings.RebalanceRelativePercentage < 1 || settings.InvestmentSettings.RebalanceRelativePercentage > 100)
                     return ValidateOptionsResult.Fail("Invalid configuration: RebalanceRelativePercentage must be between 1 and 100");
-                if (settings.InvestmentSettings.NetChangeInterval == null || settings.InvestmentSettings.NetChangeInterval2 == null)
-                    return ValidateOptionsResult.Fail("Missing configuration: NetChangeInterval or NetChangeInterval2");
-                if (!AppSettings.SqliteModifierValidator.IsMatch(settings.InvestmentSettings.NetChangeInterval) || !AppSettings.SqliteModifierValidator.IsMatch(settings.InvestmentSettings.NetChangeInterval2))
-                    return ValidateOptionsResult.Fail("Invalid configuration: NetChangeInterval. Must be one of the following: \"-[n] day(s)|month(s)|year(s)\" or \"start of day|month|year\"");
-
             }
             if (settings.FISettings != null)
             {
