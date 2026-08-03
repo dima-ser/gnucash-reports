@@ -33,8 +33,8 @@ namespace GnuCashReports.Pages
 
             decimal spendingRate = (100 - budgetSavingsRatePercentage) /100;
 
-            decimal spentYTD = ProfitLossData.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_EXPENSE).Sum(i => i.Amount);
-            decimal incomeYTD = ProfitLossData.Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_INCOME).Where(i => !exludedIncomeAccounts.Contains(i.AccountName)).Sum(i => i.Amount);
+            decimal spentYTD = ProfitLossData.Where(i => i.AccountType == AccountType.EXPENSE).Sum(i => i.Amount);
+            decimal incomeYTD = ProfitLossData.Where(i => i.AccountType == AccountType.INCOME).Where(i => !exludedIncomeAccounts.Contains(i.AccountName)).Sum(i => i.Amount);
             availableToSpendThisYear = (incomeYTD * spendingRate) - spentYTD;
         }
     }

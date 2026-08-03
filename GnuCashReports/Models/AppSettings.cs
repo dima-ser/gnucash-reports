@@ -8,11 +8,6 @@ namespace GnuCashReports.Models
     /// </summary>
     public class AppSettings
     {
-        // These are constants for account types in GnuCash database
-        public static string ACCOUNT_TYPE_INCOME = "INCOME"; 
-        public static string ACCOUNT_TYPE_EXPENSE = "EXPENSE";
-        public static string ACCOUNT_TYPE_ASSET = "ASSET";
-        public static string ACCOUNT_TYPE_LIABILITY = "LIABILITY";
         //public static decimal SQLITE_FLOATING_POINT_MARGIN = 0.0001M;
         public required string GnuCashDbConnectionString { get; set; }
         public required string RootAccountName { get; set; }

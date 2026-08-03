@@ -45,18 +45,18 @@ namespace GnuCashReports.Pages
                 new DateOnly(YearLeft, 1, 1), new DateOnly(YearLeft, 12, 31));
 
             Dictionary<string, decimal> incomeRight = profitLossRight
-                .Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_INCOME)
+                .Where(i => i.AccountType == AccountType.INCOME)
                 .ToDictionary(i=>i.AccountName, i=>i.Amount);
             Dictionary<string, decimal> incomeLeft = profitLossLeft
-                .Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_INCOME)
+                .Where(i => i.AccountType == AccountType.INCOME)
                 .ToDictionary(i=>i.AccountName, i=>i.Amount);
             Income = ThreeColumnReportItem.CombineItems(incomeLeft, incomeRight);
 
             Dictionary<string, decimal> expensesRight = profitLossRight
-                .Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_EXPENSE)
+                .Where(i => i.AccountType == AccountType.EXPENSE)
                 .ToDictionary(i=>i.AccountName, i=>i.Amount);
             Dictionary<string, decimal> expensesLeft = profitLossLeft
-                .Where(i => i.AccountType == AppSettings.ACCOUNT_TYPE_EXPENSE)
+                .Where(i => i.AccountType == AccountType.EXPENSE)
                 .ToDictionary(i=>i.AccountName, i=>i.Amount);
             Expenses = ThreeColumnReportItem.CombineItems(expensesLeft, expensesRight);
 

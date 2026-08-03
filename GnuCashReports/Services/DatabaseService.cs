@@ -77,7 +77,7 @@ FROM pl_level2";
                         {
                             decimal amount = reader[2] != DBNull.Value ? reader.GetDecimal(2) : 0;
                             string accountType = reader.GetString(0);
-                            if (accountType == AppSettings.ACCOUNT_TYPE_INCOME)
+                            if (accountType == AccountType.INCOME)
                                 amount *= -1; // income amounts are credit/negative in db, so reverse the sign before returning
                             results.Add(new ReportItem
                             {
