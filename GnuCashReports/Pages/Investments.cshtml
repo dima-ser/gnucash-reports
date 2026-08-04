@@ -27,54 +27,54 @@
     <thead>
         <tr>
             <th></th>
-            <th>US</th>
-            <th>Intnl</th>
+            <th class="text-end">US</th>
+            <th class="text-end">Intnl</th>
             <th class="text-end">Bonds</th>
         </tr>
     </thead>
     <tbody>
         <tr>
             <td>Target<br />Allocation</td>
-            <td>@Model.TargetAssetAllocation.US%</td>
-            <td>@Model.TargetAssetAllocation.INTNL%</td>
+            <td class="text-end">@Model.TargetAssetAllocation.US%</td>
+            <td class="text-end">@Model.TargetAssetAllocation.INTNL%</td>
             <td class="text-end">@Model.TargetAssetAllocation.BND%</td>
         </tr>
         <tr>
             <td>Actual<br />Allocation</td>
-            <td>@Model.ActualAssetAllocation!.US.ToString("F1")%</td>
-            <td>@Model.ActualAssetAllocation!.INTNL.ToString("F1")%</td>
+            <td class="text-end">@Model.ActualAssetAllocation!.US.ToString("F1")%</td>
+            <td class="text-end">@Model.ActualAssetAllocation!.INTNL.ToString("F1")%</td>
             <td class="text-end">@Model.ActualAssetAllocation!.BND.ToString("F1")%</td>
         </tr>
         <tr>
             <td>Target<br />Amounts</td>
-            <td>@(Model.TargetAmountUS.ToString("C0")) </td>
-            <td>@(Model.TargetAmountIntnl.ToString("C0")) </td>
+            <td class="text-end">@(Model.TargetAmountUS.ToString("C0")) </td>
+            <td class="text-end">@(Model.TargetAmountIntnl.ToString("C0")) </td>
             <td class="text-end">@(Model.TargetAmountBonds.ToString("C0"))</td>
         </tr>
         <tr>
             <td>Actual<br />Amounts</td>
-            <td>@Model.ActualAmountUS.ToString("C0")</td>
-            <td>@Model.ActualAmountIntnl.ToString("C0")</td>
+            <td class="text-end">@Model.ActualAmountUS.ToString("C0")</td>
+            <td class="text-end">@Model.ActualAmountIntnl.ToString("C0")</td>
             <td class="text-end">@Model.ActualAmountBonds.ToString("C0")</td>
         </tr>
         <tr>
             <td>Off Target by<br />(USD)</td>
-            <td>@((Model.ActualAmountUS - Model.TargetAmountUS).ToString("C0"))</td>
-            <td>@((Model.ActualAmountIntnl - Model.TargetAmountIntnl).ToString("C0"))</td>
+            <td class="text-end">@((Model.ActualAmountUS - Model.TargetAmountUS).ToString("C0"))</td>
+            <td class="text-end">@((Model.ActualAmountIntnl - Model.TargetAmountIntnl).ToString("C0"))</td>
             <td class="text-end">@((Model.ActualAmountBonds - Model.TargetAmountBonds).ToString("C0"))</td>
 
         </tr>
         <tr>
             <td>Off Target by<br />(relative %)</td>
-            <td>@(((Model.ActualAmountUS - Model.TargetAmountUS) / Model.TargetAmountUS * 100).ToString("F1"))%</td>
-            <td>@(((Model.ActualAmountIntnl - Model.TargetAmountIntnl) / Model.TargetAmountIntnl * 100).ToString("F1"))%</td>
+            <td class="text-end">@(((Model.ActualAmountUS - Model.TargetAmountUS) / Model.TargetAmountUS * 100).ToString("F1"))%</td>
+            <td class="text-end">@(((Model.ActualAmountIntnl - Model.TargetAmountIntnl) / Model.TargetAmountIntnl * 100).ToString("F1"))%</td>
             <td class="text-end">@(((Model.ActualAmountBonds - Model.TargetAmountBonds) / Model.TargetAmountBonds * 100).ToString("F1"))%</td>
 
         </tr>
         <tr>
             <td><b>Rebalance?</b></td>
-            <td><b @(Model.RebalanceUS? Html.Raw("class=\"text-danger\"") : Html.Raw("class=\"text-success\""))>@(Model.RebalanceUS ? "YES" : "NO")</b></td>
-            <td><b @(Model.RebalanceIntnl? Html.Raw("class=\"text-danger\"") : Html.Raw("class=\"text-success\""))>@(Model.RebalanceIntnl ? "YES" : "NO")</b></td>
+            <td class="text-end"><b @(Model.RebalanceUS? Html.Raw("class=\"text-danger\"") : Html.Raw("class=\"text-success\""))>@(Model.RebalanceUS ? "YES" : "NO")</b></td>
+            <td class="text-end"><b @(Model.RebalanceIntnl? Html.Raw("class=\"text-danger\"") : Html.Raw("class=\"text-success\""))>@(Model.RebalanceIntnl ? "YES" : "NO")</b></td>
             <td class="text-end"><b @(Model.RebalanceBonds? Html.Raw("class=\"text-danger\"") : Html.Raw("class=\"text-success\""))>@(Model.RebalanceBonds ? "YES" : "NO")</b></td>
 
         </tr>
