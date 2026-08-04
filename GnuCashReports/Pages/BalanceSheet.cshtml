@@ -8,57 +8,17 @@
 <h1 class="text-center">Balance Sheet</h1>
 
 <table class="table">
-    <form method="get" class="d-inline">
     <thead>
         <tr>
             <th scope="col"></th>
             <th class="text-end" scope="col">
-                <select asp-for="Date" asp-items="Model.DateList" onchange="this.form.submit()"></select>
+                <select asp-for="Date" asp-items="Model.DateList" 
+                    hx-get="@Url.Page("BalanceSheet")" 
+                    hx-target="#bsdata"></select>
             </th>
         </tr>
     </thead> 
-    </form>
-    <tbody>
-        <tr>
-            <td colspan="2"><b>ASSETS</b></td>
-        </tr>
-        @foreach (var item in Model.BalanceSheetData.Where(i => i.AccountType == AccountType.ASSET))
-        {
-            <tr>
-                <td>&nbsp;@item.AccountName</td>
-                <td class="text-end">@((item.Amount).ToString("C0"))</td>
-            </tr>
-        }
-        <tr>
-            <td><b>TOTAL ASSETS</b></td>
-            <td class="text-end"><b>@((Model.BalanceSheetData.Where(i => i.AccountType == AccountType.ASSET).Sum(i => i.Amount)).ToString("C0"))</b></td>
-        </tr>
-        <tr>
-            <td colspan="2"></td>
-        </tr>
-        <tr>
-            <td colspan="2"><b>LIABILITIES</b></td>
-        </tr>
-        @foreach (var item in Model.BalanceSheetData.Where(i => i.AccountType == AccountType.LIABILITY).OrderBy(i => i.AccountName))
-        {
-            <tr>
-                <td>&nbsp;@item.AccountName</td>
-                <td class="text-end">@item.Amount.ToString("C0")</td>
-            </tr>
-        }
-        <tr>
-            <td><b>TOTAL LIABILITIES</b></td>
-            <td class="text-end"><b>@Model.BalanceSheetData.Where(i => i.AccountType == AccountType.LIABILITY).Sum(i => i.Amount).ToString("C0")</b></td>
-        </tr>
-        <tr>
-            <td colspan="2"></td>
-        </tr>
-        <tr style="font-size:large">
-            <td><b>NET WORTH</b></td>
-            <td class="text-end"><b>@((Model.BalanceSheetData.Where(i => i.AccountType == AccountType.ASSET).Sum(i => i.Amount) +
-                                        Model.BalanceSheetData.Where(i => i.AccountType == AccountType.LIABILITY).Sum(i => i.Amount)).ToString("C0"))
-                </b>
-            </td>
-        </tr>
+    <tbody id="bsdata">
+        @await Html.PartialAsync("BalanceSheetPartial")
     </tbody>
 </table>

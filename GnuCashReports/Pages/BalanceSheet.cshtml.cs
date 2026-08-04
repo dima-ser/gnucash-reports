@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Htmx;
 
 namespace GnuCashReports.Pages
 {
@@ -36,9 +37,12 @@ namespace GnuCashReports.Pages
             DateList = new SelectList(dates);
         }
 
-        public async Task OnGetAsync()
+        public async Task<IActionResult> OnGetAsync()
         {
             BalanceSheetData = await _dbService.GetBalanceSheetAsync(await _dbService.GetRootBalanceSheetAccountGuids(), Date);
+            if (!Request.IsHtmx())
+                return Page();
+            return Partial("BalanceSheetPartial", this);
         }
     }
 
