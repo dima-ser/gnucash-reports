@@ -4,6 +4,7 @@ using GnuCashReports.Models;
 using GnuCashReports.Services;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Htmx;
 
 namespace GnuCashReports.Pages
 {
@@ -50,7 +51,7 @@ namespace GnuCashReports.Pages
             YearListLeft = new SelectList(years, (currentYear-1).ToString());
         }
 
-        public async Task OnGetAsync()
+        public async Task<IActionResult> OnGetAsync()
         {
             if (String.IsNullOrWhiteSpace(_appSettings.CashFlowSettings?.ParentCashAccount))
                 throw new Exception("Missing configuration \"ParentCashAccount\"");
@@ -96,6 +97,10 @@ namespace GnuCashReports.Pages
                 new List<string> {cashAccountGuid}, startDateRight.AddDays(-1))).Sum(i=>i.Amount);
             EndBalanceRight = (await _dbService.GetBalanceSheetAsync(
                 new List<string> {cashAccountGuid}, endDateRight)).Sum(i=>i.Amount);
+
+            if (!Request.IsHtmx())
+                return Page();
+            return Partial("CashflowPartial", this);
         }
 
        
