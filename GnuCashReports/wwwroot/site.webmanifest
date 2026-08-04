@@ -5,7 +5,7 @@
     "icons":
         [{"src":"/android-chrome-192x192.png","sizes":"192x192","type":"image/png", "purpose": "any"},
          {"src":"/android-chrome-512x512.png","sizes":"512x512","type":"image/png", "purpose": "any"},
-         {"src":"/android-maskable.jpg","sizes":"250x250","type":"image/jpg", "purpose": "maskable"}
+         {"src":"/android-maskable.jpg","sizes":"250x250","type":"image/jpeg", "purpose": "maskable"}
         ],
     "theme_color":"#17b978",
     "background_color":"#17b978",
