@@ -7,21 +7,32 @@
 
 <h1 style="text-align:center">Savings Rate</h1>
 
-<form method="get" class="d-inline">
+
 <div class="container mt-4">
   <div class="row">
     <div class="col-6">
-        <p style="text-align:center"><select asp-for="YearLeft" asp-items="Model.YearListLeft" onchange="this.form.submit()"></select></p>
+        <p style="text-align:center">
+            <select asp-for="YearLeft" asp-items="Model.YearListLeft" 
+                hx-get="@Url.Page("SavingsRate")" 
+                hx-swap="none" 
+                hx-include="[name='YearLeft'], [name='YearRight']" >
+            </select>
+        </p>
       <canvas id="chart"></canvas>
     </div>
     <div class="col-6">
-        <p style="text-align:center"><select asp-for="YearRight" asp-items="Model.YearListRight" onchange="this.form.submit()"></select></p>
+        <p style="text-align:center">
+            <select asp-for="YearRight" asp-items="Model.YearListRight" 
+                hx-get="@Url.Page("SavingsRate")" 
+                hx-swap="none" 
+                hx-include="[name='YearLeft'], [name='YearRight']" >
+            </select>
+        </p>
       <canvas id="chart2"></canvas>
     </div>
   </div>
 </div>
-</form>
-    
+
 
 
 @section Scripts {
@@ -90,6 +101,23 @@
                     display: false,
                 }
             }
+        }
+    });
+
+    // Bind the custom HTMX event listener
+    document.body.addEventListener('refreshChart', (evt) => {
+        // HTMX places the server payload inside event.detail
+        const { data, data2 } = evt.detail;
+
+        if (chart) {
+            // Inject data and call the native update method
+            chart.data.datasets[0].data = data;
+            chart.update(); 
+        }
+        if (chart2) {
+            // Inject data and call the native update method
+            chart2.data.datasets[0].data = data2;
+            chart2.update(); 
         }
     });
 </script>

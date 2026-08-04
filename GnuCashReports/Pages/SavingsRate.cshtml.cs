@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Options;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Htmx;
+using System.Text.Json;
 
 namespace GnuCashReports.Pages
 {
@@ -36,7 +38,7 @@ namespace GnuCashReports.Pages
             YearListLeft = new SelectList(years, (currentYear-1).ToString());
         }
 
-        public async Task OnGetAsync()
+        public async Task<IActionResult> OnGetAsync()
         {
             List<ReportItem> profitLossRight  = await _plService.GetLevel2ProfitLossAsync(
                 new DateOnly(YearRight, 1, 1), new DateOnly(YearRight, 12, 31));
@@ -60,6 +62,24 @@ namespace GnuCashReports.Pages
             else
                 percentSpentRightYear = 100; // to avoid division by zero. Saving percentage will show 0% until we have positive income in a year
             percentSavedRightYear = 100 - percentSpentRightYear;
+
+            if (!Request.IsHtmx())
+                return Page();
+
+            // AJAX response. Creates a custom "refreshChart" event in the "HX-Trigger" header that HTMX can intercept 
+            // and create a DOM trigger which we can then listen on with JS
+            var chartPayload = new
+            {
+                data = new[] { percentSpentLeftYear, percentSavedLeftYear},
+                data2 = new[] { percentSpentRightYear, percentSavedRightYear }
+            };
+            string jsonHeader = JsonSerializer.Serialize(new {
+                refreshChart = chartPayload // "refreshChart" is your custom event name
+            });
+            Response.Headers.Append("HX-Trigger", jsonHeader);
+
+            // Return No Content (204) so HTMX doesn't swap any HTML on the page
+            return new NoContentResult();
         }
     }
 
