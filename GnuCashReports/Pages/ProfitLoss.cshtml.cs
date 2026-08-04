@@ -4,6 +4,7 @@ using GnuCashReports.Models;
 using GnuCashReports.Services;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
+using Htmx;
 
 namespace GnuCashReports.Pages
 {
@@ -37,7 +38,7 @@ namespace GnuCashReports.Pages
             YearListLeft = new SelectList(years, (currentYear-1).ToString());
         }
 
-        public async Task OnGetAsync()
+        public async Task<IActionResult> OnGetAsync()
         {
             List<ReportItem> profitLossRight  = await _plService.GetLevel2ProfitLossAsync(
                 new DateOnly(YearRight, 1, 1), new DateOnly(YearRight, 12, 31));
@@ -63,6 +64,9 @@ namespace GnuCashReports.Pages
             NetProfitLeft = Income.Sum(i => i.AmountLeft) - Expenses.Sum(i => i.AmountLeft);
             NetProfitRight = Income.Sum(i => i.AmountRight) - Expenses.Sum(i => i.AmountRight);
 
+            if (!Request.IsHtmx())
+                return Page();
+            return Partial("ProfitLossPartial", this);
         }
     }
 
