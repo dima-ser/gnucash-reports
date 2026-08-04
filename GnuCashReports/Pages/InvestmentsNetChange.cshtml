@@ -1,0 +1,5 @@
+@model InvestmentsModel
+@{ ArgumentNullException.ThrowIfNull(Model); }
+<span @(Model.NetChange < 0 ? Html.Raw("class='text-danger'") : Html.Raw("class='text-success'"))>@Model.NetChange.ToString("+#,##0;-#,##0;0") 
+            (@(Model.NetPercentageChange == Decimal.MaxValue ? Html.Raw("&infin;%") : Model.NetPercentageChange.ToString("P2")))
+</span>

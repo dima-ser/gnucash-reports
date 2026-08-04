@@ -10,18 +10,16 @@
     <span class="text-small fst-italic">as of @Model.Date</span>
     <h2 style="font-size: 9vw;">@Model.TotalAmount.ToString("C0")</h2>
      <span style="font-size: 4vw;">
-        <span @(Model.NetChange < 0 ? Html.Raw("class='text-danger'") : Html.Raw("class='text-success'"))>@Model.NetChange.ToString("+#,##0;-#,##0;0") 
-            (@(Model.NetPercentageChange == Decimal.MaxValue ? Html.Raw("&infin;%") : Model.NetPercentageChange.ToString("P2")))
-        </span> 
-        <form method="get" class="d-inline">
-        <select asp-for="NetChangeInterval" onchange="this.form.submit()">
+        <span id="netchange">
+            @await Html.PartialAsync("InvestmentsNetChange")
+        </span>
+        <select asp-for="NetChangeInterval" hx-get="@Url.Page("Investments")" hx-target="#netchange">
             <option value="1D">1D</option>
             <option value="1M">1M</option>
             <option value="6M">6M</option>
             <option value="YTD">YTD</option>
             <option value="1Y">1Y</option>
         </select>
-        </form>
         </span> 
 </div>
 

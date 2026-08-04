@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 using System.Reflection;
+using Htmx;
 
 namespace GnuCashReports.Pages
 {
@@ -53,7 +54,7 @@ namespace GnuCashReports.Pages
         }
 
 
-        public async Task OnGetAsync()
+        public async Task<IActionResult> OnGetAsync()
         {
             List<string> investmentParentAccounts = _appSettings.InvestmentSettings!.InvestmentParentAccounts;
             List<string> investmentParentGuids = new List<string>();
@@ -104,7 +105,9 @@ namespace GnuCashReports.Pages
             RebalanceIntnl = Math.Abs((ActualAmountIntnl - TargetAmountIntnl) / TargetAmountIntnl * 100) >= RebalanceRelativePercentage;
             RebalanceBonds = Math.Abs((ActualAmountBonds - TargetAmountBonds) / TargetAmountBonds * 100) >= RebalanceRelativePercentage;
 
-            
+            if (!Request.IsHtmx())
+                return Page();
+            return Partial("InvestmentsNetChange", this);
         }
 
         DateOnly GetPreviousDate(DateOnly startDate, string netChangeInterval)
