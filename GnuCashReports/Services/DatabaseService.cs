@@ -405,7 +405,7 @@ FROM balances b";
 
                 var command = connection.CreateCommand();
                 command.CommandText = @"SELECT
-                    t.last_transaction_date,
+                    t.last_enter_date,
                     p.last_price_date,
                     t.oldest_transaction_date,
                     t.transaction_count,
@@ -413,7 +413,7 @@ FROM balances b";
                     a.account_count_active
                 FROM (
                     SELECT
-                        MAX(CASE WHEN post_date <= DATE('now') THEN post_date END) AS last_transaction_date,
+                        MAX(enter_date) AS last_enter_date,
                         MIN(post_date) AS oldest_transaction_date,
                         COUNT(guid) AS transaction_count
                     FROM transactions
@@ -436,8 +436,8 @@ FROM balances b";
                         while (await reader.ReadAsync())
                         {
                             DateTime temp = DateTime.MinValue;
-                            DateTime.TryParse(reader["last_transaction_date"].ToString(), out temp);
-                            result.LastTransactionDate = DateOnly.FromDateTime(temp);
+                            DateTime.TryParse(reader["last_enter_date"].ToString(), out temp);
+                            result.LastUpdatedDate = DateOnly.FromDateTime(temp);
                             DateTime.TryParse(reader["last_price_date"].ToString(), out temp);
                             result.LastPriceDate = DateOnly.FromDateTime(temp);;
                             DateTime.TryParse(reader["oldest_transaction_date"].ToString(), out temp);
