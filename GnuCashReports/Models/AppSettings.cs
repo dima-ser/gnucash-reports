@@ -10,15 +10,15 @@ namespace GnuCashReports.Models
     {
         //public static decimal SQLITE_FLOATING_POINT_MARGIN = 0.0001M;
         public required string GnuCashDbConnectionString { get; set; }
-        public required string RootAccountName { get; set; }
+        public required string RootAccountName { get; set; } = "Root Account";
         public string? ClosingEntriesPattern { get; set; }
-        public decimal TargetSavingsPercentage { get; set; }
-        public int NumYearsAvailable {get; set; }
-        public bool IncludeFutureTransactionsInPL { get; set; }
+        public decimal TargetSavingsPercentage { get; set; } = 50;
+        public int NumYearsAvailable {get; set; } = 2;
+        public bool IncludeFutureTransactionsInPL { get; set; } = true;
         public List<string>? ExcludedIncomeAccountsFromSavingRate { get; set; }
         public Dictionary<string, string>? ExpenseAccountEmojis { get; set; }
 
-        public int NetWorthYearsToDisplay { get; set; }
+        public int NetWorthYearsToDisplay { get; set; } = 2;
         public List<string>? DashboardLayout {get; set;}
         public InvestmentSettings? InvestmentSettings { get; set; }
 
