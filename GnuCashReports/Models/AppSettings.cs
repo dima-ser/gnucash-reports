@@ -14,6 +14,7 @@ namespace GnuCashReports.Models
         public string? ClosingEntriesPattern { get; set; }
         public decimal TargetSavingsPercentage { get; set; }
         public int NumYearsAvailable {get; set; }
+        public bool IncludeFutureTransactionsInPL { get; set; }
         public List<string>? ExcludedIncomeAccountsFromSavingRate { get; set; }
         public Dictionary<string, string>? ExpenseAccountEmojis { get; set; }
 

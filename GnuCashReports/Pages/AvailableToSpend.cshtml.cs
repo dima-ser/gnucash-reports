@@ -25,9 +25,10 @@ namespace GnuCashReports.Pages
 
         public async Task OnGetAsync()
         {
+            bool includeFutureTx = _appSettings.IncludeFutureTransactionsInPL;
+            DateOnly endDate = includeFutureTx ? new DateOnly(DateTime.Now.Year, 12, 31) : DateOnly.FromDateTime(DateTime.Now);
             ProfitLossData = await _plService.GetLevel2ProfitLossAsync(
-                new DateOnly(DateTime.Now.Year, 1, 1),
-                new DateOnly(DateTime.Now.Year, 12, 31));
+                new DateOnly(DateTime.Now.Year, 1, 1), endDate);
             budgetSavingsRatePercentage = _appSettings.TargetSavingsPercentage;
             List<string> exludedIncomeAccounts = _appSettings.ExcludedIncomeAccountsFromSavingRate ?? new List<string>();
 
