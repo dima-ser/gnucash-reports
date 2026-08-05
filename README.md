@@ -42,6 +42,9 @@ This is used in the "Available to Spend" report to show amount available to spen
 ## NumYearsAvailable [required]
 Must be between 2 and 100. Number of years (starting from the current year and going backwards) that are available in the dropdowns used in certain reports for comparison.
 
+## IncludeFutureTransactionsInPL [optional]
+If set to `true`, all P&L reports (Profit & Loss, Available to Spend and Savings Rate) will include future-dated transaction for the current year (up to the end of year). Otherwise, these reports will only include transactions to date for the current year. Default: `false`.
+
 ## ExpenseAccountEmojis [optional]
 These are used in your expense reports to make them easier to see at a glance and to shorten account names to better fit on the expense chart. Used in the expense report to prepend account names and in the expense chart instead of account names to save space. If omitted for a particular expense account, account name will be used instead. This section is optional.
 
