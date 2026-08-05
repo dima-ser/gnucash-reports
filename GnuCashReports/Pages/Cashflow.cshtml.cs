@@ -60,7 +60,12 @@ namespace GnuCashReports.Pages
             Dictionary<string, decimal> inflowsLeft = new Dictionary<string, decimal>();
             Dictionary<string, decimal> outflowsLeft = new Dictionary<string, decimal>();
 
-            DateOnly startDateLeft = new DateOnly(YearLeft, 1, 1), endDateLeft = new DateOnly(YearLeft, 12, 31);
+            
+            DateOnly currentDate = DateOnly.FromDateTime(DateTime.Now);
+            int currentYear = currentDate.Year;
+            DateOnly startDateLeft = new DateOnly(YearLeft, 1, 1);
+            // only include YTD transactions for the current year
+            DateOnly endDateLeft = YearLeft == currentYear ? currentDate : new DateOnly(YearLeft, 12, 31);
             List<CashFlowItem> cashFlowItemsLeft  = await _dbService.GetCashFlowStatement(
                 _appSettings.CashFlowSettings.ParentCashAccount, startDateLeft, endDateLeft);
             inflowsLeft = RewriteCashflowCategories(
@@ -72,7 +77,8 @@ namespace GnuCashReports.Pages
                 _appSettings.CashFlowSettings.OutflowCategories, 
                 CashFlowType.Outflow);
 
-            DateOnly startDateRight = new DateOnly(YearRight, 1, 1), endDateRight = new DateOnly(YearRight, 12, 31);
+            DateOnly startDateRight = new DateOnly(YearRight, 1, 1);
+            DateOnly endDateRight = YearRight == currentYear ? currentDate : new DateOnly(YearRight, 12, 31);
             List<CashFlowItem> cashFlowItemsRight  = await _dbService.GetCashFlowStatement(
                 _appSettings.CashFlowSettings.ParentCashAccount, startDateRight, endDateRight);
             inflowsRight = RewriteCashflowCategories(
