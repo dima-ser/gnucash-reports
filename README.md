@@ -32,10 +32,7 @@ The application is configured via `appsettings.json` file. Rename the provided `
 The only setting required for the app to run is `GnuCashDbConnectionString`. The rest are optional. The ones required for default reports have sensible default values. Some are only required for certain reports.
 
 ## GnuCashDbConnectionString [required]
-Connection string to your GnuCash database (must be a Sqlite db). If running in Docker, leave this as is and instead, map the path in your docker-compose file.
-
-## RootAccountName [optional]
-This is the name of your root account in the database. This is normally set to `Root Account` unless you changed it in your database. Default value: `Root Account`
+Connection string to your GnuCash database (must be a Sqlite db). If running in Docker, set this to `Data Source=sqlite/gnucash.sqlite;Mode=ReadOnly` and map the path in your docker-compose file.
 
 ## TargetSavingsPercentage [optional]
 This is used in the "Available to Spend" report to show amount available to spend this year based on your desired savings percentage rate. For example, set this to 50 if you're targeting to save 50% of you income. If not provided, it will default to 50.
@@ -128,11 +125,11 @@ List of all reports is below. Note that some of these will only work if you prov
 
 | Report name | Identifier/endpoint | Description | Requires additional configuration? |
 | - | - | - | - |
-| Profit & Loss / Income Statement | `profitloss` | Standard P&L accounting report. Each comparison period is one year. Available periods are current year and past years up to `NumYearsAvailable`  | No |
+| Profit & Loss / Income Statement | `profitloss` | Standard P&L accounting report. Each period is one calendar year. Available periods are current year and previous years up to `NumYearsAvailable`  | No |
 | Savings Rate | `savingsrate` | Shows the ratio of how much you save vs spend on yearly basis. Based on P&L report. | No |
 | Available to Spend | `availabletospend` | Shows how much you can spend in the current year to meet your desired savings rate. Based on P&L report. | No |
-| Balance Sheet | `balancesheet` | Standard balance sheet report. Available dates are today and December 31 of each past year up to `NumYearsAvailable` | No |
-| Net Worth Chart | `networthchart` | Shows how your net worth has changed over time (once per year as of end of each year). Based on balance sheet. Number of years shown is configured in `NetWorthYearsToDisplay` | No |
+| Balance Sheet | `balancesheet` | Standard balance sheet report. Available dates are today and December 31 of each previous year up to `NumYearsAvailable` | No |
+| Net Worth Chart | `networthchart` | Shows how your net worth has changed over time (once per year as of the end of each year). Based on balance sheet. Number of years shown is configured in `NetWorthYearsToDisplay` | No |
 | Database Stats | `dbstats` | Not a financial report, but a set of statistics about your database, such as when it was last updated, latest price date, number of transactions, etc. | No |
 | Cash Flow | `cashflow` | Shows your cash movement on annual basis. Similar to GnuCash's "Cash Flow" report, but simplified to override account names with user-defined category for each cash movement. To configure, see `CashFlowSettings` configuration section | Yes |
 | FI Report | `fireport` | Financial Independence readiness report. Opinionated metric showing how close you are to being "financially independent". Defined as a percentage of your current liquid assets (including cash, stocks and retirement accounts) to the total amount required to be finanically independent. The total amount required is defined as how much you need in order for your average annual expenses to be at or below your desired annual [safe withdrawal rate](https://www.bogleheads.org/wiki/Safe_withdrawal_rates). To configure, see `FISettings` configuration section | Yes |

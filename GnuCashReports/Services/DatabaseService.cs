@@ -36,7 +36,7 @@
                 var command = connection.CreateCommand();
                 command.Parameters.Add(new SqliteParameter("@startDate", startDate));
                 command.Parameters.Add(new SqliteParameter("@endDate", endDate)); 
-                command.Parameters.Add(new SqliteParameter("@rootAccountName", _appSettings.RootAccountName));
+                //command.Parameters.Add(new SqliteParameter("@rootAccountName", _appSettings.RootAccountName));
                 //command.Parameters.Add(new SqliteParameter("@ignorePattern", 
                 //!String.IsNullOrWhiteSpace(_appSettings.ClosingEntriesPattern) ? _appSettings.ClosingEntriesPattern : DBNull.Value));
                 command.CommandText = @"
@@ -45,8 +45,8 @@
            a.guid AS level2_guid, a.name AS level2_name
     FROM accounts a
     WHERE a.parent_guid IN (
-		(select guid from accounts where account_type='INCOME' and parent_guid=(select guid from accounts where account_type='ROOT' and name=@rootAccountName)),
-		(select guid from accounts where account_type='EXPENSE' and parent_guid=(select guid from accounts where account_type='ROOT' and name=@rootAccountName))
+		(select guid from accounts where account_type='INCOME' and parent_guid=(select root_account_guid from books limit 1)),
+		(select guid from accounts where account_type='EXPENSE' and parent_guid=(select root_account_guid from books limit 1))
 	)
     UNION ALL
 
@@ -175,9 +175,9 @@ select sum(total_amount)/@numYears as AverageAnnualExpenses from pl_level2_ytd";
             {
                 await connection.OpenAsync();
                 var command = connection.CreateCommand();
-                command.Parameters.Add(new SqliteParameter("@rootAccountName", _appSettings.RootAccountName));
+                //command.Parameters.Add(new SqliteParameter("@rootAccountName", _appSettings.RootAccountName));
                 command.CommandText = @"select guid from accounts where account_type in ('ASSET','LIABILITY') 
-                and parent_guid=(select guid from accounts where account_type='ROOT' and name=@rootAccountName)";
+                and parent_guid=(select root_account_guid from books limit 1)";
 
                 using (var reader = await command.ExecuteReaderAsync())
                 {
@@ -190,7 +190,7 @@ select sum(total_amount)/@numYears as AverageAnnualExpenses from pl_level2_ytd";
                         return rootBalanceSheetAccountGuids;
                     }
                     else
-                        throw new Exception("No root accounts found for ASSET and LIABILITY. Please make sure the root account name is configured correctly"); 
+                        throw new Exception("No root accounts found for ASSET and LIABILITY. Your database may be corrupted."); 
                 }
             }
         }
@@ -536,7 +536,7 @@ WHERE full_path = @fullAccountPath";
                 command.Parameters.Add(new SqliteParameter("@parentCashAccountGuid", parentCashAccountGuid));
                 command.Parameters.Add(new SqliteParameter("@startDate", startDate));
                 command.Parameters.Add(new SqliteParameter("@endDate", endDate));
-                command.Parameters.Add(new SqliteParameter("@rootAccountName", _appSettings.RootAccountName));
+                //command.Parameters.Add(new SqliteParameter("@rootAccountName", _appSettings.RootAccountName));
                 command.CommandText = @"WITH RECURSIVE 
   -- 1. Identify all GUIDs inside the Cash box (the parent and all its children)
   cash_accounts AS (
@@ -546,7 +546,7 @@ WHERE full_path = @fullAccountPath";
     JOIN cash_accounts ca ON a.parent_guid = ca.guid
   ),
 
-  -- 2. Find the Root Account GUID dynamically by name, then seed its immediate children
+  -- 2. Find the Root Account GUID, then seed its immediate children
   all_account_paths AS (
     SELECT 
       guid, 
@@ -554,13 +554,7 @@ WHERE full_path = @fullAccountPath";
       name, 
       name AS full_path
     FROM accounts 
-    WHERE parent_guid = (
-      SELECT guid 
-      FROM accounts 
-      WHERE name = @rootAccountName
-        AND (parent_guid IS NULL OR parent_guid = '')
-      LIMIT 1
-    )
+    WHERE parent_guid = (select root_account_guid from books limit 1)
     
     UNION ALL
     

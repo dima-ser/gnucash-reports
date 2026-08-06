@@ -12,7 +12,6 @@ namespace GnuCashReports.Models
         public static int MIN_NUM_YEARS_AVAILABLE = 2;
         public static int DEFAULT_NET_WORTH_YEARS_MAX = 10;
         public required string GnuCashDbConnectionString { get; set; }
-        public required string RootAccountName { get; set; } = "Root Account";
         public decimal TargetSavingsPercentage { get; set; } = 50;
         public int NumYearsAvailable {get; set; }
         public bool IncludeFutureTransactionsInPL { get; set; } = true;
@@ -63,10 +62,10 @@ namespace GnuCashReports.Models
             {
                 return ValidateOptionsResult.Fail("Missing configuration: GnuCashDbConnectionString");
             }
-            if (String.IsNullOrEmpty(settings.RootAccountName))
-            {
-                return ValidateOptionsResult.Fail("Missing configuration: RootAccountName");
-            }
+            // if (String.IsNullOrEmpty(settings.RootAccountName))
+            // {
+            //     return ValidateOptionsResult.Fail("Missing configuration: RootAccountName");
+            // }
             if (settings.TargetSavingsPercentage < 0 || settings.TargetSavingsPercentage > 100)
                 return ValidateOptionsResult.Fail("Invalid configuration: TargetSavingsPercentage must be between 0 and 100");
             //if (settings.NumYearsAvailable < 2 || settings.NumYearsAvailable > 100)
