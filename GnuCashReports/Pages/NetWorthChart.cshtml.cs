@@ -33,7 +33,7 @@ namespace GnuCashReports.Pages
 
         public async Task OnGetAsync()
         {
-            NumYearsToDisplay = _appSettings.NetWorthYearsToDisplay;
+            NumYearsToDisplay = _appSettings.NetWorthMaxYears;
             DateTime currentYearEnd = new DateTime(DateTime.Now.Year, 12, 31);
             for (int i = NumYearsToDisplay; i >= 0; i--) {
                 DateOnly date = DateOnly.FromDateTime(currentYearEnd.AddYears(-i));

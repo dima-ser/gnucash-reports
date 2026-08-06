@@ -9,16 +9,18 @@ namespace GnuCashReports.Models
     public class AppSettings
     {
         //public static decimal SQLITE_FLOATING_POINT_MARGIN = 0.0001M;
+        public static int MIN_NUM_YEARS_AVAILABLE = 2;
+        public static int DEFAULT_NET_WORTH_YEARS_MAX = 10;
         public required string GnuCashDbConnectionString { get; set; }
         public required string RootAccountName { get; set; } = "Root Account";
         public string? ClosingEntriesPattern { get; set; }
         public decimal TargetSavingsPercentage { get; set; } = 50;
-        public int NumYearsAvailable {get; set; } = 2;
+        public int NumYearsAvailable {get; set; }
         public bool IncludeFutureTransactionsInPL { get; set; } = true;
         public List<string>? ExcludedIncomeAccountsFromSavingRate { get; set; }
         public Dictionary<string, string>? ExpenseAccountEmojis { get; set; }
 
-        public int NetWorthYearsToDisplay { get; set; } = 2;
+        public int NetWorthMaxYears { get; set; } 
         public List<string>? DashboardLayout {get; set;}
         public InvestmentSettings? InvestmentSettings { get; set; }
 
@@ -68,11 +70,11 @@ namespace GnuCashReports.Models
             }
             if (settings.TargetSavingsPercentage < 0 || settings.TargetSavingsPercentage > 100)
                 return ValidateOptionsResult.Fail("Invalid configuration: TargetSavingsPercentage must be between 0 and 100");
-            if (settings.NumYearsAvailable < 2 || settings.NumYearsAvailable > 100)
-                    return ValidateOptionsResult.Fail("Invalid configuration: NumYearsAvailable must be between 2 and 100");
+            //if (settings.NumYearsAvailable < 2 || settings.NumYearsAvailable > 100)
+            //        return ValidateOptionsResult.Fail("Invalid configuration: NumYearsAvailable must be between 2 and 100");
 
-            if (settings.NetWorthYearsToDisplay < 1)
-                return ValidateOptionsResult.Fail("Invalid configuration: NetWorthYearsToDisplay must be positive");
+            // if (settings.NetWorthMaxYears < 1)
+            //     return ValidateOptionsResult.Fail("Invalid configuration: NetWorthYearsToDisplay must be positive");
             if (settings.InvestmentSettings != null)
             {
 

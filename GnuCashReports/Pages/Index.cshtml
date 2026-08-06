@@ -23,9 +23,16 @@
 }
 else
 {
-    <p class="d-flex justify-content-center"">
-      No reports configured to show on the home page. Please configure the DashboardLayout in appsettings.json
-       <ul class="fs-5">
+      <p class="d-flex justify-content-center px-3">
+      Using default dashboard layout. To change, please configure the DashboardLayout in appsettings.json
+      </p>
+      <div class="masonry">
+        <iframe src="/profitloss" class="dynamic-iframe" scrolling="no"></iframe>
+        <iframe src="/balancesheet" class="dynamic-iframe" scrolling="no"></iframe>
+        <iframe src="/networthchart" class="dynamic-iframe" scrolling="no"></iframe>
+        <iframe src="/dbstats" class="dynamic-iframe" scrolling="no"></iframe>
+      </div>
+      @* <ul class="fs-5">
       <li><a href="/profitloss">Profit & Loss</a></li>
       <li><a href="/balancesheet">Balance Sheet</a></li>
       <li><a href="/investments">Investments</a></li>
@@ -35,8 +42,8 @@ else
       <li><a href="/availabletospend">Available To Spend</a></li>
       <li><a href="/fireport">FI Report</a></li>
       <li><a href="/dbstats">Database Statistics</a></li>
-      </ul>
-    </p>
+      </ul> *@
+
    
 }
 

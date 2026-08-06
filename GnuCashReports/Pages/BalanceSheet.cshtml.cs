@@ -15,7 +15,7 @@ namespace GnuCashReports.Pages
         private readonly AppSettings _appSettings;
 
         public List<ReportItem> BalanceSheetData { get; set; } = new();
-        public SelectList DateList;
+        public SelectList? DateList;
         [BindProperty (SupportsGet = true)]
         public DateOnly Date {get; set;} = DateOnly.FromDateTime(DateTime.Now);
 
@@ -23,22 +23,22 @@ namespace GnuCashReports.Pages
         {
             _dbService = dbService;
             _appSettings = appSettings.Value;
-
-            List<string> dates = new List<string>();
-
-            int currentYear = DateTime.Now.Year;
-            for (int i = 0; i < _appSettings.NumYearsAvailable; i++)
-            {
-                if (i==0)
-                    dates.Add(DateTime.Now.ToString("yyyy-MM-dd"));
-                else
-                    dates.Add(new DateOnly(currentYear-i, 12, 31).ToString("yyyy-MM-dd"));
-            }
-            DateList = new SelectList(dates);
         }
+        
 
         public async Task<IActionResult> OnGetAsync()
         {
+            List<string> dates = new List<string>();
+            int currentYear = DateTime.Now.Year;
+            for (int i = 0; i < _appSettings.NumYearsAvailable; i++)
+            {
+                if (i == 0)
+                    dates.Add(DateTime.Now.ToString("yyyy-MM-dd"));
+                else
+                    dates.Add(new DateOnly(currentYear - i, 12, 31).ToString("yyyy-MM-dd"));
+            }
+            DateList = new SelectList(dates);
+
             BalanceSheetData = await _dbService.GetBalanceSheetAsync(await _dbService.GetRootBalanceSheetAccountGuids(), Date);
             if (!Request.IsHtmx())
                 return Page();
