@@ -46,7 +46,7 @@ If set to `true`, all P&L reports (Profit & Loss, Available to Spend and Savings
 ## ExpenseAccountEmojis [optional]
 These are used in your P&L report to prepend emojis to account names to make them easier to recognize at a glance. This section is optional.
 
-## NetWorthYearsToDisplay [optional]
+## NetWorthMaxYears [optional]
 Number of years to display on net worth chart (including current year to date). Default value: 2 or the number of years worth of data in your database (up to the maximum of 10), whichever is greater.
 
 ## DashboardLayout [optional]
@@ -129,7 +129,7 @@ List of all reports is below. Note that some of these will only work if you prov
 | Savings Rate | `savingsrate` | Shows the ratio of how much you save vs spend on yearly basis. Based on P&L report. | No |
 | Available to Spend | `availabletospend` | Shows how much you can spend in the current year to meet your desired savings rate. Based on P&L report. | No |
 | Balance Sheet | `balancesheet` | Standard balance sheet report. Available dates are today and December 31 of each previous year up to `NumYearsAvailable` | No |
-| Net Worth Chart | `networthchart` | Shows how your net worth has changed over time (once per year as of the end of each year). Based on balance sheet. Number of years shown is configured in `NetWorthYearsToDisplay` | No |
+| Net Worth Chart | `networthchart` | Shows how your net worth has changed over time (once per year as of the end of each year). Based on balance sheet. Number of years shown is configured in `NetWorthMaxYears` | No |
 | Database Stats | `dbstats` | Not a financial report, but a set of statistics about your database, such as when it was last updated, latest price date, number of transactions, etc. | No |
 | Cash Flow | `cashflow` | Shows your cash movement on annual basis. Similar to GnuCash's "Cash Flow" report, but simplified to override account names with user-defined category for each cash movement. To configure, see `CashFlowSettings` configuration section | Yes |
 | FI Report | `fireport` | Financial Independence readiness report. Opinionated metric showing how close you are to being "financially independent". Defined as a percentage of your current liquid assets (including cash, stocks and retirement accounts) to the total amount required to be finanically independent. The total amount required is defined as how much you need in order for your average annual expenses to be at or below your desired annual [safe withdrawal rate](https://www.bogleheads.org/wiki/Safe_withdrawal_rates). To configure, see `FISettings` configuration section | Yes |
