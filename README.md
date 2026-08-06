@@ -29,16 +29,13 @@ The application is configured via `appsettings.json` file. Rename the provided `
 
 `Logging` and `AllowedHosts` sections are standard .NET configs, can be left at default. All app-specifc configuration is under `AppSettings` section.
 
-The only setting required for the app to run is `GnuCashDbConnectionString`. `ClosingEntriesPattern` is only required if you are using the "Close Book" feature in GnuCash. The rest are optional. Some have sensible defaults and some are only required for certain reports.
+The only setting required for the app to run is `GnuCashDbConnectionString`. The rest are optional. The ones required for default reports have sensible default values. Some are only required for certain reports.
 
 ## GnuCashDbConnectionString [required]
 Connection string to your GnuCash database (must be a Sqlite db). If running in Docker, leave this as is and instead, map the path in your docker-compose file.
 
 ## RootAccountName [optional]
 This is the name of your root account in the database. This is normally set to `Root Account` unless you changed it in your database. Default value: `Root Account`
-
-## ClosingEntriesPattern [optional]
-If you are using GnuCash's "Close Book" feature, you'll need to specify your closing entries description pattern to ignore those transactions, **otherwise your reports will be inaccurate**. Used as argument for `not like` SQL condition, so if all your closing entries start with `Closing`, you'd specify `Closing%`. You can omit this paramater if your database does not have closing entries. 
 
 ## TargetSavingsPercentage [optional]
 This is used in the "Available to Spend" report to show amount available to spend this year based on your desired savings percentage rate. For example, set this to 50 if you're targeting to save 50% of you income. If not provided, it will default to 50.

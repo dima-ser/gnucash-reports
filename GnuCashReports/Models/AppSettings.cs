@@ -13,7 +13,6 @@ namespace GnuCashReports.Models
         public static int DEFAULT_NET_WORTH_YEARS_MAX = 10;
         public required string GnuCashDbConnectionString { get; set; }
         public required string RootAccountName { get; set; } = "Root Account";
-        public string? ClosingEntriesPattern { get; set; }
         public decimal TargetSavingsPercentage { get; set; } = 50;
         public int NumYearsAvailable {get; set; }
         public bool IncludeFutureTransactionsInPL { get; set; } = true;

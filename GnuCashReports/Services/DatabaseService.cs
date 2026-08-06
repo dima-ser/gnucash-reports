@@ -37,8 +37,8 @@
                 command.Parameters.Add(new SqliteParameter("@startDate", startDate));
                 command.Parameters.Add(new SqliteParameter("@endDate", endDate)); 
                 command.Parameters.Add(new SqliteParameter("@rootAccountName", _appSettings.RootAccountName));
-                command.Parameters.Add(new SqliteParameter("@ignorePattern", 
-                !String.IsNullOrWhiteSpace(_appSettings.ClosingEntriesPattern) ? _appSettings.ClosingEntriesPattern : DBNull.Value));
+                //command.Parameters.Add(new SqliteParameter("@ignorePattern", 
+                //!String.IsNullOrWhiteSpace(_appSettings.ClosingEntriesPattern) ? _appSettings.ClosingEntriesPattern : DBNull.Value));
                 command.CommandText = @"
             WITH RECURSIVE account_tree AS (
     SELECT a.guid, a.name, a.parent_guid, a.account_type,
@@ -55,6 +55,7 @@
     FROM accounts a
     JOIN account_tree at ON a.parent_guid = at.guid
 ),
+closing_txguids as (select obj_guid from slots where name='book_closing'),
 pl_level2 AS (
     SELECT at.level2_guid, at.level2_name AS account_name,
            at.account_type,
@@ -63,7 +64,7 @@ pl_level2 AS (
     JOIN transactions t ON s.tx_guid = t.guid
     JOIN account_tree at ON s.account_guid = at.guid
     WHERE DATE(t.post_date) >= DATE(@startDate) AND DATE(t.post_date) <= DATE(@endDate)
-        AND ( @ignorePattern IS NULL OR description NOT LIKE @ignorePattern )
+        AND t.guid not in (select obj_guid from closing_txguids)
     GROUP BY at.level2_guid, at.level2_name, at.account_type
 )
 SELECT account_type, account_name, amount
@@ -113,8 +114,8 @@ FROM pl_level2";
                 DateTime endDate = new DateTime(DateTime.Now.Year, 1, 1);
                 command.Parameters.Add(new SqliteParameter("@startDate", startDate));
                 command.Parameters.Add(new SqliteParameter("@endDate", endDate));
-                command.Parameters.Add(new SqliteParameter("@ignorePattern", 
-                    !String.IsNullOrWhiteSpace(_appSettings.ClosingEntriesPattern) ? _appSettings.ClosingEntriesPattern : DBNull.Value));
+                //command.Parameters.Add(new SqliteParameter("@ignorePattern", 
+                //    !String.IsNullOrWhiteSpace(_appSettings.ClosingEntriesPattern) ? _appSettings.ClosingEntriesPattern : DBNull.Value));
                 command.CommandText = @"
             WITH RECURSIVE
 root_guid as (select guid from accounts where parent_guid is NULL and name='Root Account'),
@@ -132,6 +133,7 @@ account_tree AS (
     FROM accounts a
     JOIN account_tree at ON a.parent_guid = at.guid
 ),
+closing_txguids as (select obj_guid from slots where name='book_closing'),
 pl_level2_ytd AS (
     SELECT at.level2_guid, at.level2_name AS account_name,
            at.account_type,
@@ -140,7 +142,7 @@ pl_level2_ytd AS (
     JOIN transactions t ON s.tx_guid = t.guid
     JOIN account_tree at ON s.account_guid = at.guid
     WHERE t.post_date BETWEEN @startDate AND @endDate
-           AND ( @ignorePattern IS NULL OR description NOT LIKE @ignorePattern )
+           AND t.guid not in (select obj_guid from closing_txguids)
     GROUP BY at.level2_guid, at.level2_name, at.account_type
 )
 select sum(total_amount)/@numYears as AverageAnnualExpenses from pl_level2_ytd";
