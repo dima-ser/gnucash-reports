@@ -2,7 +2,7 @@
 {
     public class DatabaseStats
     {
-        public DateOnly LastUpdatedDate { get; set; }
+        public DateTime LastUpdatedDate { get; set; }
         public DateOnly LastPriceDate { get; set; }
 
         public DateOnly OldestTransactionDate { get; set; }

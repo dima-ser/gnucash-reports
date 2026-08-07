@@ -439,7 +439,7 @@ FROM balances b";
                         {
                             DateTime temp = DateTime.MinValue;
                             DateTime.TryParse(reader["last_enter_date"].ToString(), out temp);
-                            result.LastUpdatedDate = DateOnly.FromDateTime(temp);
+                            result.LastUpdatedDate = temp.ToLocalTime();
                             DateTime.TryParse(reader["last_price_date"].ToString(), out temp);
                             result.LastPriceDate = DateOnly.FromDateTime(temp);;
                             DateTime.TryParse(reader["oldest_transaction_date"].ToString(), out temp);
