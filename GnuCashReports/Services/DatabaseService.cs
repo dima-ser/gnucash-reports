@@ -415,6 +415,7 @@ ORDER BY general_account_type, account_code;";
                 string parentGuidsJson = JsonSerializer.Serialize(investmentParentAccountGuids);
                 command.Parameters.Add(new SqliteParameter("@parentGuidsJson", parentGuidsJson));
                 command.Parameters.Add(new SqliteParameter("@date", date));
+                command.Parameters.Add(new SqliteParameter("@reportCurrency", _appSettings.ReportCurrency));
                 command.CommandText = @"WITH RECURSIVE account_tree AS (
     SELECT guid, name, account_type, commodity_guid, commodity_scu, parent_guid
     FROM accounts
@@ -426,34 +427,45 @@ ORDER BY general_account_type, account_code;";
     JOIN account_tree at ON a.parent_guid = at.guid
 ),
 latest_prices AS (
-    SELECT p.commodity_guid,
-           MAX(p.date) AS latest_date
-    FROM prices p
-    WHERE DATE(p.date) <= DATE(@date) 
-    GROUP BY p.commodity_guid
+    SELECT p.commodity_guid, p.currency_guid, MAX(p.date) AS latest_date
+    FROM prices p 
+    WHERE DATE(p.date) <= DATE(@date)  
+    GROUP BY p.commodity_guid, p.currency_guid
 ),
-price_lookup AS (
-    SELECT p.commodity_guid,
-           p.value_num * 1.0 / p.value_denom AS price
+primary_prices as (
+SELECT p.commodity_guid, p.currency_guid, c.mnemonic, c.namespace, p.value_num * 1.0 / p.value_denom AS price
+    FROM prices p 
+    JOIN latest_prices lp ON p.commodity_guid = lp.commodity_guid AND p.currency_guid=lp.currency_guid AND p.date = lp.latest_date
+	JOIN commodities c on p.currency_guid=c.guid),
+inverse_prices as (
+ SELECT p.currency_guid as commodity_guid, p.commodity_guid as currency_guid, c.mnemonic, c.namespace, p.value_denom * 1.0 / p.value_num AS price
     FROM prices p
-    JOIN latest_prices lp ON p.commodity_guid = lp.commodity_guid AND p.date = lp.latest_date
-),
+    JOIN latest_prices lp ON p.commodity_guid = lp.commodity_guid AND p.currency_guid=lp.currency_guid AND p.date = lp.latest_date
+	JOIN commodities c on p.commodity_guid=c.guid),
+all_prices as (
+SELECT * from primary_prices
+UNION
+SELECT * from inverse_prices
+UNION -- second order prices	
+SELECT p.commodity_guid, i.currency_guid, i.mnemonic, i.namespace, p.price * i.price as price 
+	FROM primary_prices p 
+	JOIN inverse_prices i on p.currency_guid=i.commodity_guid),
 balances AS (
     SELECT 
 		at.guid,
         at.account_type,
         at.name AS account_name,
         CASE 
-            WHEN at.account_type in ('MUTUAL', 'STOCK') AND c.namespace != 'CURRENCY' THEN
-                SUM(s.quantity_num * 1.0 / s.quantity_denom * pl.price)
-            ELSE
-                SUM(s.value_num * 1.0 / s.value_denom)
-        END AS balance
+			WHEN c.mnemonic = @reportCurrency and c.namespace='CURRENCY' THEN
+				SUM(s.quantity_num * 1.0 / s.quantity_denom)
+			ELSE
+				SUM(s.quantity_num * 1.0 / s.quantity_denom * IFNULL(pl.price, 0))
+         END AS balance
     FROM splits s
     JOIN transactions t ON s.tx_guid = t.guid and DATE(t.post_date) <= DATE(@date) 	
     JOIN account_tree at ON s.account_guid = at.guid
     LEFT JOIN commodities c ON at.commodity_guid = c.guid
-    LEFT JOIN price_lookup pl ON at.commodity_guid = pl.commodity_guid
+    LEFT JOIN all_prices pl ON at.commodity_guid = pl.commodity_guid and pl.mnemonic=@reportCurrency and pl.namespace='CURRENCY'
     GROUP BY at.guid, at.account_type, at.name
     HAVING ABS(balance) > 0.0001
 )
