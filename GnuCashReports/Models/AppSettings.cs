@@ -12,6 +12,7 @@ namespace GnuCashReports.Models
         public static int MIN_NUM_YEARS_AVAILABLE = 2;
         public static int DEFAULT_NET_WORTH_YEARS_MAX = 10;
         public required string GnuCashDbConnectionString { get; set; }
+        public required string ReportCurrency {get; set; } = "USD";
         public decimal TargetSavingsPercentage { get; set; } = 50;
         public int NumYearsAvailable {get; set; }
         public bool IncludeFutureTransactionsInPL { get; set; } = true;
