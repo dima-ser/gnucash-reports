@@ -635,9 +635,9 @@ WHERE full_path = @fullAccountPath";
                 command.CommandText = @"WITH RECURSIVE 
   -- 1. Identify all GUIDs inside the Cash box (the parent and all its children)
   cash_accounts AS (
-    SELECT guid, commodity_guid FROM accounts WHERE guid = @parentCashAccountGuid
+    SELECT guid FROM accounts WHERE guid = @parentCashAccountGuid
     UNION ALL
-    SELECT a.guid, a.commodity_guid FROM accounts a
+    SELECT a.guid FROM accounts a
     JOIN cash_accounts ca ON a.parent_guid = ca.guid
   ),
 
@@ -669,54 +669,21 @@ WHERE full_path = @fullAccountPath";
     FROM splits 
     WHERE account_guid IN (SELECT guid FROM cash_accounts)
   ),
-latest_prices AS (
-    SELECT p.commodity_guid, p.currency_guid, MAX(p.date) AS latest_date
-    FROM prices p 
-    WHERE DATE(p.date) <= DATE(@endDate)  
-    GROUP BY p.commodity_guid, p.currency_guid
-),
-primary_prices as (
-SELECT p.commodity_guid, p.currency_guid, c.mnemonic, c.namespace, p.value_num * 1.0 / p.value_denom AS price
-    FROM prices p 
-    JOIN latest_prices lp ON p.commodity_guid = lp.commodity_guid AND p.currency_guid=lp.currency_guid AND p.date = lp.latest_date
-	JOIN commodities c on p.currency_guid=c.guid),
-inverse_prices as (
- SELECT p.currency_guid as commodity_guid, p.commodity_guid as currency_guid, c.mnemonic, c.namespace, p.value_denom * 1.0 / p.value_num AS price
-    FROM prices p
-    JOIN latest_prices lp ON p.commodity_guid = lp.commodity_guid AND p.currency_guid=lp.currency_guid AND p.date = lp.latest_date
-	JOIN commodities c on p.commodity_guid=c.guid),
-all_prices as (
-SELECT * from primary_prices
-UNION
-SELECT * from inverse_prices
-UNION -- second order prices	
-SELECT p.commodity_guid, i.currency_guid, i.mnemonic, i.namespace, p.price * i.price as price 
-	FROM primary_prices p 
-	JOIN inverse_prices i on p.currency_guid=i.commodity_guid),
-	
-split_amounts AS (
-    SELECT
-        s.account_guid,
-        CASE
-            WHEN c.mnemonic = @reportCurrency AND c.namespace = 'CURRENCY'
-            THEN s.quantity_num * 1.0 / s.quantity_denom
-            ELSE s.quantity_num * 1.0 / s.quantity_denom * IFNULL(pl.price, 0)
-        END AS amount
+
+  -- 4. Get the counterparties and determine if individual splits are inflows or outflows
+  counter_splits AS (
+    SELECT 
+      s.account_guid,
+      CASE WHEN (CAST(s.value_num AS REAL) / s.value_denom) < 0 
+           THEN ABS(CAST(s.value_num AS REAL) / s.value_denom) ELSE 0 END AS inflow_amount,
+      CASE WHEN (CAST(s.value_num AS REAL) / s.value_denom) > 0 
+           THEN CAST(s.value_num AS REAL) / s.value_denom ELSE 0 END AS outflow_amount
     FROM splits s
-	JOIN transactions tx ON s.tx_guid = tx.guid
-	JOIN accounts at on s.account_guid=at.guid
-	LEFT JOIN commodities c ON at.commodity_guid = c.guid
-    LEFT JOIN all_prices pl ON at.commodity_guid = pl.commodity_guid AND pl.mnemonic = @reportCurrency AND pl.namespace = 'CURRENCY'
+    JOIN transactions tx ON s.tx_guid = tx.guid
     WHERE s.tx_guid IN (SELECT tx_guid FROM transactions_touching_cash)
       AND s.account_guid NOT IN (SELECT guid FROM cash_accounts)
       AND DATE(tx.post_date) >= DATE(@startDate) AND DATE(tx.post_date) <= DATE(@endDate)
-),
-counter_splits AS (
-    SELECT
-    account_guid,
-    CASE WHEN amount < 0 THEN ABS(amount) ELSE 0 END AS inflow_amount,
-    CASE WHEN amount > 0 THEN amount ELSE 0 END AS outflow_amount
-FROM split_amounts)
+  )
 
 -- 5. Aggregate inflows and outflows by the pre-cleaned counterparty account path
 SELECT 

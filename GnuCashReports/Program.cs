@@ -38,7 +38,7 @@ app.UseAuthorization();
 
 app.MapRazorPages();
 
-app.UseRequestLocalization(new string[] { "en-US", });
+app.UseRequestLocalization(new string[] { "en-US" });
 
 // Do some additional settings validations that are not possible to do inside of AppSettings
 using (var scope = app.Services.CreateScope())
