@@ -65,7 +65,7 @@ An array of strings that defines which reports are shown on the home page and in
 These are required for the "Investments" report. If you don't track investments in GnuCash, you can omit this whole section. However, if any of these are configured, the rest are required as well.
 
 ### InvestmentParentAccounts
-Full colon-delimited paths to all your parent investement accounts in GnuCash/accounts you want to treat as "Investments" and be included in the "Investments" report. For example: `Assets:Investments:Brokerage`. All child accounts are included automatically, so only parents are required. At least one is required, but you can have as many as needed.
+Full colon-delimited paths to all your parent investement accounts in GnuCash/accounts you want to treat as "Investments" and be included in the "Investments" report. For example: `Assets:Investments:Brokerage`. All child accounts are included automatically, so only parents are required. At least one is required, but you can have as many as needed. Note that account names are case-sensitive.
 
 ### InvestmentAssetAllocations
 This section is used to let the application know what portion of each investment account is US Stock, International Stock and Bonds. All your investment accounts (including children of `InvestmentParentAccounts`) need to be configured here. Use account name for the "Name" property (can be the same as stock/fund ticker, but not necesserily). For example, if you hold VTSAX (which is 100% US Stock), you'd configure it like so (assuming account name in GnuCash is also "VTSAX"):
