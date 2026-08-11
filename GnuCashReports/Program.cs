@@ -2,6 +2,8 @@ using GnuCashReports.Models;
 using GnuCashReports.Services;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Localization;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,14 +40,24 @@ app.UseAuthorization();
 
 app.MapRazorPages();
 
-app.UseRequestLocalization(new string[] { "en-US" });
-
 // Do some additional settings validations that are not possible to do inside of AppSettings
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var options = services.GetRequiredService<IOptions<AppSettings>>();
     var appSettings = options.Value;
+
+    var locale = appSettings.Locale;
+    var culture = new CultureInfo(locale);
+
+    var localizationOptions = new RequestLocalizationOptions
+    {
+        DefaultRequestCulture = new RequestCulture(culture),
+        SupportedCultures = new List<CultureInfo> { culture },
+        SupportedUICultures = new List<CultureInfo> { culture }
+    };
+
+    app.UseRequestLocalization(localizationOptions);
 
     // If NumYearsAvailable or NetWorthMaxYears are not provided, fetch sensible defaults from DB
     if (appSettings.NumYearsAvailable < AppSettings.MIN_NUM_YEARS_AVAILABLE || appSettings.NetWorthMaxYears <= 0)

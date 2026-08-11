@@ -42,8 +42,8 @@
     const dangerColor = getComputedStyle(root).getPropertyValue('--bs-danger').trim();
 
     const labels = [ "Spent", "Saved"];
-    const data = [@Model.percentSpentLeftYear, @Model.percentSavedLeftYear];
-    const data2 = [@Model.percentSpentRightYear, @Model.percentSavedRightYear];
+    const data = @Html.Raw(JsonConvert.SerializeObject(new[] { Model.percentSpentLeftYear, Model.percentSavedLeftYear }));
+    const data2 = @Html.Raw(JsonConvert.SerializeObject(new[] { Model.percentSpentRightYear, Model.percentSavedRightYear }));
             const colors = [dangerColor, successColor];
 
     //const ctx = document.getElementById('plChart').getContext('2d');
