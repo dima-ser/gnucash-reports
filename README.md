@@ -34,6 +34,12 @@ The only setting required for the app to run is `GnuCashDbConnectionString`. The
 ## GnuCashDbConnectionString [required]
 Connection string to your GnuCash database (must be a Sqlite db). If running in Docker, set this to `Data Source=sqlite/gnucash.sqlite;Mode=ReadOnly` and map the path in your docker-compose file.
 
+## ReportCurrency [optional]
+(ISO_4217)[https://en.wikipedia.org/wiki/ISO_4217] currency code in which you want your reports to be calculated. Defaults to `USD` if not provided. Must be a valid currency in GnuCash. Will show zero balances if there is no price/exchange configured in GnuCash between acccount currency and report currency. The price used will always be the last price up through the report date. For P&L reports with both start and end dates, the last price before the end date will be used. Note that the cash flow report is currently not supporting this, so if you have accounts with multiple currencies as your "cash" accounts, the cash flow report will be inaccurate.
+
+## Locale [optional]
+The country and region code as per https://learn.microsoft.com/en-us/globalization/locale/standard-locale-names. Affects number formatting and currency symbols shown on reports. Default value: `en-US`.
+
 ## TargetSavingsPercentage [optional]
 This is used in the "Available to Spend" report to show amount available to spend this year based on your desired savings percentage rate. For example, set this to 50 if you're targeting to save 50% of you income. If not provided, it will default to 50.
 
