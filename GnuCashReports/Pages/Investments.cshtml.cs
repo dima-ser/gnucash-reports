@@ -99,11 +99,19 @@ namespace GnuCashReports.Pages
             else
                 NetPercentageChange = Decimal.MaxValue;
 
-            ActualAssetAllocation = new AssetAllocation("Actual Asset Allocation", ActualAmountUS / TotalAmount * 100,
+            if (TotalAmount != 0)
+            {
+                ActualAssetAllocation = new AssetAllocation("Actual Asset Allocation", ActualAmountUS / TotalAmount * 100,
                     ActualAmountIntnl / TotalAmount * 100, ActualAmountBonds / TotalAmount * 100);
-            RebalanceUS = Math.Abs((ActualAmountUS - TargetAmountUS) / TargetAmountUS * 100) >= RebalanceRelativePercentage;
-            RebalanceIntnl = Math.Abs((ActualAmountIntnl - TargetAmountIntnl) / TargetAmountIntnl * 100) >= RebalanceRelativePercentage;
-            RebalanceBonds = Math.Abs((ActualAmountBonds - TargetAmountBonds) / TargetAmountBonds * 100) >= RebalanceRelativePercentage;
+                RebalanceUS = Math.Abs((ActualAmountUS - TargetAmountUS) / TargetAmountUS * 100) >= RebalanceRelativePercentage;
+                RebalanceIntnl = Math.Abs((ActualAmountIntnl - TargetAmountIntnl) / TargetAmountIntnl * 100) >= RebalanceRelativePercentage;
+                RebalanceBonds = Math.Abs((ActualAmountBonds - TargetAmountBonds) / TargetAmountBonds * 100) >= RebalanceRelativePercentage;
+            }
+            else
+            {
+                throw new Exception("Total investment balance is zero. Unable to calculate asset allocation. Please configure InvestmentParentAccounts with non-zero balance.");
+            }
+
 
             if (!Request.IsHtmx())
                 return Page();
