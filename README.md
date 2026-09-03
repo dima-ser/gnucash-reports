@@ -1,6 +1,8 @@
 ﻿# GnuCashReports
 Provides various financial reports based on exising GnuCash database. Each report is meant to be used within Home Assistant as a "webpage"/(iframe) card, so they're designed to fit well on a small screen. However, you can also use this as a standalone web application that you can view in any browser/screen. 
 
+![Screenshot](gnucash-reports-screenshot.png?raw=true "Title")
+
 # Installation (Docker)
 The app can be run as a standalone container in [Docker](https://hub.docker.com/r/dimaser/gnucashreports) or as a Docker Compose stack (recommended). An example Docker compose file is below. 
 
