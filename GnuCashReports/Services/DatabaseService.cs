@@ -366,7 +366,7 @@ balances AS (
     HAVING ABS(balance) > 0.0001
 )
 --select * from balances
-SELECT case when account_type in ('ASSET','BANK','CASH','MUTUAL','STOCK') then 'ASSET' else account_type end as general_account_type,  account_name, sum(balance) as balance
+SELECT case when account_type in ('ASSET','BANK','CASH','MUTUAL','STOCK') then 'ASSET' when account_type in ('CREDIT','LIABILITY') then 'LIABILITY' else account_type end as general_account_type,  account_name, sum(balance) as balance
 FROM balances
 group by general_account_type, account_name
 ORDER BY general_account_type, account_code;";
