@@ -41,7 +41,7 @@ Connection string to your GnuCash database (must be a Sqlite db). If running in 
 The country and region code as per https://learn.microsoft.com/en-us/globalization/locale/standard-locale-names. Affects number formatting and currency symbols shown on reports. Default value: `en-US`.
 
 ## TargetSavingsPercentage [optional]
-This is used in the "Available to Spend" report to show amount available to spend this year based on your desired savings percentage rate. For example, set this to 50 if you're targeting to save 50% of you income. If not provided, it will default to 50.
+This is used in the "Savings Rate" report to show amount available to spend this year based on your desired savings percentage rate. For example, set this to 50 if you're targeting to save 50% of you income. If not provided, it will default to 50.
 
 ## NumYearsAvailable [optional]
 Number of years (starting from the current year and going backwards) that are available in the dropdowns used in certain reports for comparison. Minimum valid value is 2 as most reports require at least 2 different years to compare. If omitted, will default to the number of years worth of data in your database or 2, whichever is greater.
