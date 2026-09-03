@@ -13,13 +13,9 @@
     <Content Remove="sqlite\**" />
     <EmbeddedResource Remove="sqlite\**" />
     <None Remove="sqlite\**" />
-  </ItemGroup>
 
-  <ItemGroup>
     <Content Remove="wwwroot\favicon.ico" />
-  </ItemGroup>
 
-  <ItemGroup>
     <None Include="wwwroot\android-chrome-192x192.png" />
     <None Include="wwwroot\android-chrome-512x512.png" />
     <None Include="wwwroot\apple-touch-icon.png" />
@@ -27,6 +23,11 @@
     <None Include="wwwroot\favicon-32x32.png" />
     <None Include="wwwroot\favicon.ico" />
     <None Include="wwwroot\site.webmanifest" />
+
+    <Content Update="appsettings.*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>

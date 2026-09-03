@@ -363,3 +363,5 @@ MigrationBackup/
 FodyWeavers.xsd
 /GnuCashReports/appsettings.Development.json
 GnuCashReports/appsettings.Test.json
+GnuCashReports/appsettings.Docker.json
+GnuCashReports/Docker-run-command.md

@@ -34,11 +34,20 @@ The only setting required for the app to run is `GnuCashDbConnectionString`. The
 ## GnuCashDbConnectionString [required]
 Connection string to your GnuCash database (must be a Sqlite db). If running in Docker, set this to `Data Source=sqlite/gnucash.sqlite;Mode=ReadOnly` and map the path in your docker-compose file.
 
+## ReportCurrency [optional]
+(ISO_4217)[https://en.wikipedia.org/wiki/ISO_4217] currency code in which you want your reports to be calculated. Defaults to `USD` if not provided. Must be a valid currency in GnuCash. Will show zero balances if there is no price/exchange configured in GnuCash between acccount currency and report currency. The price used will always be the last price up through the report date. For P&L reports with both start and end dates, the last price before the end date will be used. Note that the cash flow report is currently not supporting this, so if you have accounts with multiple currencies as your "cash" accounts, the cash flow report will be inaccurate.
+
+## Locale [optional]
+The country and region code as per https://learn.microsoft.com/en-us/globalization/locale/standard-locale-names. Affects number formatting and currency symbols shown on reports. Default value: `en-US`.
+
 ## TargetSavingsPercentage [optional]
 This is used in the "Available to Spend" report to show amount available to spend this year based on your desired savings percentage rate. For example, set this to 50 if you're targeting to save 50% of you income. If not provided, it will default to 50.
 
 ## NumYearsAvailable [optional]
 Number of years (starting from the current year and going backwards) that are available in the dropdowns used in certain reports for comparison. Minimum valid value is 2 as most reports require at least 2 different years to compare. If omitted, will default to the number of years worth of data in your database or 2, whichever is greater.
+
+## ExcludedIncomeAccountsFromSavingRate [optional]
+Names of income accounts to exclude from "Savings Rate" report. Useful when you have income (such as dividends and capital gains) inside retirement accounts that you don't want to count towards your income for the purposes of calculating savings rate.
 
 ## IncludeFutureTransactionsInPL [optional]
 If set to `true`, all P&L reports (Profit & Loss, Available to Spend and Savings Rate) will include future-dated transaction for the current year (up through the end of year). If set to `false`, these reports will only include transactions to date for the current year. Default: `true`.
@@ -59,7 +68,7 @@ An array of strings that defines which reports are shown on the home page and in
 These are required for the "Investments" report. If you don't track investments in GnuCash, you can omit this whole section. However, if any of these are configured, the rest are required as well.
 
 ### InvestmentParentAccounts
-Full colon-delimited paths to all your parent investement accounts in GnuCash/accounts you want to treat as "Investments" and be included in the "Investments" report. For example: `Assets:Investments:Brokerage`. All child accounts are included automatically, so only parents are required. At least one is required, but you can have as many as needed.
+Full colon-delimited paths to all your parent investement accounts in GnuCash/accounts you want to treat as "Investments" and be included in the "Investments" report. For example: `Assets:Investments:Brokerage`. All child accounts are included automatically, so only parents are required. At least one is required, but you can have as many as needed. Note that account names are case-sensitive.
 
 ### InvestmentAssetAllocations
 This section is used to let the application know what portion of each investment account is US Stock, International Stock and Bonds. All your investment accounts (including children of `InvestmentParentAccounts`) need to be configured here. Use account name for the "Name" property (can be the same as stock/fund ticker, but not necesserily). For example, if you hold VTSAX (which is 100% US Stock), you'd configure it like so (assuming account name in GnuCash is also "VTSAX"):
