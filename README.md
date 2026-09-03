@@ -46,6 +46,9 @@ This is used in the "Available to Spend" report to show amount available to spen
 ## NumYearsAvailable [optional]
 Number of years (starting from the current year and going backwards) that are available in the dropdowns used in certain reports for comparison. Minimum valid value is 2 as most reports require at least 2 different years to compare. If omitted, will default to the number of years worth of data in your database or 2, whichever is greater.
 
+## ExcludedIncomeAccountsFromSavingRate [optional]
+Names of income accounts to exclude from "Savings Rate" report. Useful when you have income (such as dividends and capital gains) inside retirement accounts that you don't want to count towards your income for the purposes of calculating savings rate.
+
 ## IncludeFutureTransactionsInPL [optional]
 If set to `true`, all P&L reports (Profit & Loss, Available to Spend and Savings Rate) will include future-dated transaction for the current year (up through the end of year). If set to `false`, these reports will only include transactions to date for the current year. Default: `true`.
 
