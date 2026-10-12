@@ -13,7 +13,7 @@ namespace GnuCashReports.Pages
         private readonly DatabaseService _plService;
         private readonly AppSettings _appSettings;
         public List<ReportItem> ProfitLossData { get; set; } = new();
-        public decimal availableToSpendThisYear;
+        public decimal availableToSpendThisRollingYear;
         public decimal budgetSavingsRatePercentage;
 
 
@@ -25,18 +25,18 @@ namespace GnuCashReports.Pages
 
         public async Task OnGetAsync()
         {
-            bool includeFutureTx = _appSettings.IncludeFutureTransactionsInPL;
-            DateOnly endDate = includeFutureTx ? new DateOnly(DateTime.Now.Year, 12, 31) : DateOnly.FromDateTime(DateTime.Now);
-            ProfitLossData = await _plService.GetLevel2ProfitLossAsync(
-                new DateOnly(DateTime.Now.Year, 1, 1), endDate);
+            //bool includeFutureTx = _appSettings.IncludeFutureTransactionsInPL;
+            //DateOnly endDate = includeFutureTx ? new DateOnly(DateTime.Now.Year, 12, 31) : DateOnly.FromDateTime(DateTime.Now);
+            DateOnly today = DateOnly.FromDateTime(DateTime.Now);
+            ProfitLossData = await _plService.GetLevel2ProfitLossAsync(today.AddYears(-1), today);
             budgetSavingsRatePercentage = _appSettings.TargetSavingsPercentage;
             List<string> exludedIncomeAccounts = _appSettings.ExcludedIncomeAccountsFromSavingRate ?? new List<string>();
 
             decimal spendingRate = (100 - budgetSavingsRatePercentage) /100;
 
-            decimal spentYTD = ProfitLossData.Where(i => i.AccountType == AccountType.EXPENSE).Sum(i => i.Amount);
-            decimal incomeYTD = ProfitLossData.Where(i => i.AccountType == AccountType.INCOME).Where(i => !exludedIncomeAccounts.Contains(i.AccountName)).Sum(i => i.Amount);
-            availableToSpendThisYear = (incomeYTD * spendingRate) - spentYTD;
+            decimal expenseAmount = ProfitLossData.Where(i => i.AccountType == AccountType.EXPENSE).Sum(i => i.Amount);
+            decimal incomeAmount = ProfitLossData.Where(i => i.AccountType == AccountType.INCOME).Where(i => !exludedIncomeAccounts.Contains(i.AccountName)).Sum(i => i.Amount);
+            availableToSpendThisRollingYear = (incomeAmount * spendingRate) - expenseAmount;
         }
     }
 
