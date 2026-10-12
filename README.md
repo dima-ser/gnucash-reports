@@ -54,6 +54,8 @@ Names of income accounts to exclude from "Savings Rate" and "Available to Spend"
 ## IncludeFutureTransactionsInPL [optional]
 If set to `true`, all P&L reports (Profit & Loss, Available to Spend and Savings Rate) will include future-dated transaction for the current year (up through the end of year). If set to `false`, these reports will only include transactions to date for the current year. Default: `true`.
 
+## StartDateForAllTimeSavingsRate [optional]
+Oldest transaction date used to calculate the all-time (average) savings rate. If omitted, all transactions are included up to today (or the end of current year if IncludeFutureTransactionsInPL is set to `true`)
 ## ExpenseAccountEmojis [optional]
 These are used in your P&L report to prepend emojis to account names to make them easier to recognize at a glance. This section is optional.
 
