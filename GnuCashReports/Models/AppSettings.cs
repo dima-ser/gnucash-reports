@@ -18,6 +18,7 @@ namespace GnuCashReports.Models
         public int NumYearsAvailable {get; set; }
         public bool IncludeFutureTransactionsInPL { get; set; } = true;
         public List<string>? ExcludedIncomeAccountsFromSavingRate { get; set; }
+        public DateOnly StartDateForAllTimeSavingsRate { get; set; }
         public Dictionary<string, string>? ExpenseAccountEmojis { get; set; }
 
         public int NetWorthMaxYears { get; set; } 

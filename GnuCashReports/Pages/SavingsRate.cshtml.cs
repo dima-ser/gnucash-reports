@@ -16,13 +16,13 @@ namespace GnuCashReports.Pages
         private readonly DatabaseService _plService;
         private readonly AppSettings _appSettings;
 
-        public decimal percentSpentLeftYear, percentSavedLeftYear;
-        public decimal percentSpentRightYear, percentSavedRightYear;
+        public decimal percentSpentLeftYear, percentSpentRightYear, percentSpentAllTime;
         [BindProperty (SupportsGet = true)]
         public int YearRight {get; set;} = DateTime.Now.Year;
         [BindProperty (SupportsGet = true)]
         public int YearLeft {get; set;} = DateTime.Now.Year - 1;
         public SelectList YearListRight, YearListLeft;
+        public DateOnly StartDateForAllTimeSavingsRate;
 
         public SavingsRateModel(DatabaseService plService, IOptions<AppSettings> appSettings)
         {
@@ -54,33 +54,27 @@ namespace GnuCashReports.Pages
             List<ReportItem> profitLossLeft  = await _plService.GetLevel2ProfitLossAsync(
                 new DateOnly(YearLeft, 1, 1), endDateLeft);
 
-            List<string> exludedIncomeAccounts = _appSettings.ExcludedIncomeAccountsFromSavingRate ?? new List<string>();
-
-            decimal spentLeftYear = profitLossLeft.Where(i => i.AccountType == AccountType.EXPENSE).Sum(i => i.Amount);
-            decimal incomeLeftYear = profitLossLeft.Where(i => i.AccountType == AccountType.INCOME).Where(i => !exludedIncomeAccounts.Contains(i.AccountName)).Sum(i => i.Amount);
-            if (incomeLeftYear != 0)
-                percentSpentLeftYear = Math.Round((spentLeftYear / incomeLeftYear) * 100, 1);
-            else
-                percentSpentLeftYear = 100; // to avoid division by zero.
-            percentSavedLeftYear = 100 - percentSpentLeftYear;
-
-            decimal spentRightYear = profitLossRight.Where(i => i.AccountType == AccountType.EXPENSE).Sum(i => i.Amount);
-            decimal incomeRightYear = profitLossRight.Where(i => i.AccountType == AccountType.INCOME).Where(i => !exludedIncomeAccounts.Contains(i.AccountName)).Sum(i => i.Amount);
-            if (incomeRightYear > 0 )
-                percentSpentRightYear = Math.Round((spentRightYear / incomeRightYear) * 100, 1);
-            else
-                percentSpentRightYear = 100; // to avoid division by zero. Saving percentage will show 0% until we have positive income in a year
-            percentSavedRightYear = 100 - percentSpentRightYear;
+            
+            List<string> excludedIncomeAccounts = _appSettings.ExcludedIncomeAccountsFromSavingRate ?? new List<string>();
+            percentSpentLeftYear = GetPercentSpent(profitLossLeft, excludedIncomeAccounts);
+            percentSpentRightYear = GetPercentSpent(profitLossRight, excludedIncomeAccounts);
 
             if (!Request.IsHtmx())
+            {
+                // the All-time savings rate won't change on AJAX requests, so no need to update it unless it's a full page load
+                StartDateForAllTimeSavingsRate = _appSettings.StartDateForAllTimeSavingsRate; // will be DateOnly.MinValue if not configured
+                List<ReportItem> profitLossAllTime = await _plService.GetLevel2ProfitLossAsync(
+                    StartDateForAllTimeSavingsRate, includeFutureTx ? DateOnly.MaxValue : currentDate); 
+                percentSpentAllTime = GetPercentSpent(profitLossAllTime, excludedIncomeAccounts);
                 return Page();
+            }
 
             // AJAX response. Creates a custom "refreshChart" event in the "HX-Trigger" header that HTMX can intercept 
             // and create a DOM trigger which we can then listen on with JS
             var chartPayload = new
             {
-                data = new[] { percentSpentLeftYear, percentSavedLeftYear},
-                data2 = new[] { percentSpentRightYear, percentSavedRightYear }
+                data = new[] { percentSpentLeftYear, 100 - percentSpentLeftYear},
+                data2 = new[] { percentSpentRightYear, 100 - percentSpentRightYear }
             };
             string jsonHeader = JsonSerializer.Serialize(new {
                 refreshChart = chartPayload // "refreshChart" is your custom event name
@@ -89,6 +83,22 @@ namespace GnuCashReports.Pages
 
             // Return No Content (204) so HTMX doesn't swap any HTML on the page
             return new NoContentResult();
+        }
+
+        /// <summary>
+        /// Returns percentage spent in the specified PL. If income is 0, returns 100%
+        /// </summary>
+        /// <param name="plStatement"></param>
+        /// <param name="excludedIncomeAccounts"></param>
+        /// <returns></returns>
+        private decimal GetPercentSpent(List<ReportItem> plStatement, List<string> excludedIncomeAccounts)
+        {
+            decimal expenseAmount = plStatement.Where(i => i.AccountType == AccountType.EXPENSE).Sum(i => i.Amount);
+            decimal incomeAmount = plStatement.Where(i => i.AccountType == AccountType.INCOME).Where(i => !excludedIncomeAccounts.Contains(i.AccountName)).Sum(i => i.Amount);
+            if (incomeAmount != 0) // to avoid division by zero. 
+                return Math.Round((expenseAmount / incomeAmount) * 100, 1);
+            else
+                return 100; // If we have 0 income, we assume 100% spending rate/0% savings rate
         }
     }
 

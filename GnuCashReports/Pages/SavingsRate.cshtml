@@ -11,7 +11,7 @@
 <div class="container mt-4">
   <div class="row">
     <div class="col-6">
-        <p style="text-align:center">
+        <p class="text-center">
             <select asp-for="YearLeft" asp-items="Model.YearListLeft" 
                 hx-get="@Url.Page("SavingsRate")" 
                 hx-swap="none" 
@@ -21,7 +21,7 @@
       <canvas id="chart"></canvas>
     </div>
     <div class="col-6">
-        <p style="text-align:center">
+        <p class="text-center">
             <select asp-for="YearRight" asp-items="Model.YearListRight" 
                 hx-get="@Url.Page("SavingsRate")" 
                 hx-swap="none" 
@@ -29,6 +29,12 @@
             </select>
         </p>
       <canvas id="chart2"></canvas>
+    </div>
+  </div>
+  <div class="row">
+    <div class="text-center mt-3">
+    all-time savings rate @(Model.StartDateForAllTimeSavingsRate != DateOnly.MinValue ? "(since " + Model.StartDateForAllTimeSavingsRate + ")" : "") <br/>
+    <span class="text-success fs-1"><b>@(100 - Model.percentSpentAllTime)%</b></span>
     </div>
   </div>
 </div>
@@ -42,9 +48,9 @@
     const dangerColor = getComputedStyle(root).getPropertyValue('--bs-danger').trim();
 
     const labels = [ "Spent", "Saved"];
-    const data = @Html.Raw(JsonConvert.SerializeObject(new[] { Model.percentSpentLeftYear, Model.percentSavedLeftYear }));
-    const data2 = @Html.Raw(JsonConvert.SerializeObject(new[] { Model.percentSpentRightYear, Model.percentSavedRightYear }));
-            const colors = [dangerColor, successColor];
+    const data = @Html.Raw(JsonConvert.SerializeObject(new[] { Model.percentSpentLeftYear, 100 - Model.percentSpentLeftYear }));
+    const data2 = @Html.Raw(JsonConvert.SerializeObject(new[] { Model.percentSpentRightYear, 100 - Model.percentSpentRightYear }));
+    const colors = [dangerColor, successColor];
 
     //const ctx = document.getElementById('plChart').getContext('2d');
     const chart = new Chart('chart', {
